@@ -3750,76 +3750,158 @@ function submitParaphrase(cardId) {
 }
 
 function analyzeEnglishText(text) {
-  const issues = [];
-  let corrected = text;
+  // 逐句分析，给出具体修改和地道改写
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  const fixes = [];
+  let polished = '';
 
   const rules = [
-    { pattern: /\bi\b/g, correct: 'I', explain: 'I 必须大写' },
-    { pattern: /\bdont\b/g, correct: "don't", explain: '缺少撇号' },
-    { pattern: /\bcant\b/g, correct: "can't", explain: '缺少撇号' },
-    { pattern: /\bwont\b/g, correct: "won't", explain: '缺少撇号' },
-    { pattern: /\bisnt\b/g, correct: "isn't", explain: '缺少撇号' },
-    { pattern: /\bdidnt\b/g, correct: "didn't", explain: '缺少撇号' },
-    { pattern: /\bim\b/gi, correct: "I'm", explain: '缺少撇号和大写' },
-    { pattern: /\bive\b/gi, correct: "I've", explain: '缺少撇号和大写' },
-    { pattern: /\bthier\b/gi, correct: 'their', explain: 'their/there/they\'re 混淆' },
-    { pattern: /\brecieve\b/gi, correct: 'receive', explain: 'ei 顺序错误' },
-    { pattern: /\bI very like\b/gi, correct: 'I really like', explain: 'very 不修饰动词 like' },
-    { pattern: /\bplay phone\b/gi, correct: 'use my phone / check my phone', explain: '玩手机不是 play phone' },
-    { pattern: /\blearn knowledge\b/gi, correct: 'gain knowledge / learn', explain: 'learn 不与 knowledge 搭配' },
-    { pattern: /\bin the weekend\b/gi, correct: 'on the weekend', explain: '美式用 on，英式用 at' },
-    { pattern: /\blook forward to see\b/gi, correct: 'look forward to seeing', explain: 'to 是介词，后接 doing' },
-    { pattern: /\bmake a meeting\b/gi, correct: 'schedule a meeting', explain: '安排会议用 schedule' },
+    { re: /\bi\b/g, fix: 'I', tip: 'I（我）永远大写，不论在句子什么位置' },
+    { re: /\bdont\b/g, fix: "don't", tip: "don't 需要撇号" },
+    { re: /\bcant\b/g, fix: "can't", tip: "can't 需要撇号" },
+    { re: /\bwont\b/g, fix: "won't", tip: "won't 需要撇号" },
+    { re: /\bisnt\b/g, fix: "isn't", tip: "isn't 需要撇号" },
+    { re: /\bdidnt\b/g, fix: "didn't", tip: "didn't 需要撇号" },
+    { re: /\bim\b/gi, fix: "I'm", tip: "I'm 需要撇号和大写 I" },
+    { re: /\bive\b/gi, fix: "I've", tip: "I've 需要撇号和大写 I" },
+    { re: /\bthier\b/gi, fix: 'their', tip: '拼写错误：their（他们的），不是 thier' },
+    { re: /\brecieve\b/gi, fix: 'receive', tip: '拼写：receive，i before e except after c' },
+    { re: /\bI very like\b/gi, fix: 'I really like', tip: 'very 不修饰动词。想表达"很喜欢"用 really / absolutely love / I\'m really into' },
+    { re: /\bplay phone\b/gi, fix: 'use my phone', tip: '"玩手机"地道说法是 use my phone / scroll through my phone / check my phone' },
+    { re: /\blearn knowledge\b/gi, fix: 'gain knowledge', tip: 'learn 直接接学的内容（learn English），不跟 knowledge 搭配' },
+    { re: /\bin the weekend\b/gi, fix: 'on the weekend', tip: '介词：美式 on the weekend，英式 at the weekend' },
+    { re: /\blook forward to see\b/gi, fix: 'look forward to seeing', tip: '这里的 to 是介词，后面必须用 doing 形式' },
+    { re: /\bmake a meeting\b/gi, fix: 'schedule a meeting', tip: '"安排会议"用 schedule / set up / arrange a meeting' },
+    { re: /\bI want to\b/gi, fix: "I'd like to", tip: "I'd like to 比 I want to 更礼貌、更常用" },
+    { re: /\bI think\b/gi, fix: "I believe", tip: '书面语中 I believe / In my view 比 I think 更正式' },
+    { re: /\ba lot of\b/gi, fix: 'plenty of', tip: 'plenty of 比 a lot of 更自然，书面更推荐' },
+    { re: /\bgood\b/gi, fix: 'great', tip: 'good 太泛，试试 great / excellent / wonderful 更具体' },
+    { re: /\bbad\b/gi, fix: 'terrible', tip: 'bad 太泛，试试 terrible / awful / poor 更准确' },
+    { re: /\bvery\b/gi, fix: 'really', tip: '口语中 really 比 very 更自然；书面可换 extremely / quite' },
+    { re: /\bget\b/gi, fix: 'get', tip: '' }, // just mark, don't change
   ];
 
-  rules.forEach(r => {
-    if (r.pattern.test(text)) {
-      issues.push(r);
-      corrected = corrected.replace(r.pattern, r.correct);
-    }
+  sentences.forEach(s => {
+    if (!s.trim()) return;
+    let fixed = s;
+    const sentenceFixes = [];
+
+    rules.forEach(r => {
+      if (r.re.test(fixed)) {
+        const match = fixed.match(r.re);
+        if (match) {
+          const original = match[0];
+          sentenceFixes.push({ original, fix: r.fix, tip: r.tip });
+          fixed = fixed.replace(r.re, r.fix);
+        }
+      }
+    });
+
+    // 地道化改写
+    let improved = fixed;
+    const upgrades = [
+      { from: /\bget up\b/gi, to: 'wake up', note: 'wake up 更常用，get up 强调从床上起来' },
+      { from: /\bgo to work\b/gi, to: 'head to work', note: 'head to 更口语化' },
+      { from: /\bhave a good time\b/gi, to: 'have a great time', note: 'great 比 good 更生动' },
+      { from: /\bI am happy\b/gi, to: "I'm thrilled", note: 'thrilled 比 happy 更有感情色彩' },
+      { from: /\bI am sad\b/gi, to: "I'm feeling down", note: 'feeling down 比 sad 更口语化' },
+      { from: /\bI am tired\b/gi, to: "I'm exhausted", note: 'exhausted 比 tired 更有力度' },
+      { from: /\bI am busy\b/gi, to: "I'm swamped", note: 'swamped 是"忙得不可开交"的地道说法' },
+      { from: /\bgo home\b/gi, to: 'head home', note: 'head home 更口语自然' },
+      { from: /\bI don't know\b/gi, to: "I'm not sure", note: "I'm not sure 比 I don't know 更礼貌" },
+      { from: /\bI don't understand\b/gi, to: "I'm not following", note: "更口语化的表达" },
+      { from: /\bI agree\b/gi, to: "I'm on board with that", note: "更地道的表达" },
+      { from: /\bcan you\b/gi, to: 'could you', note: 'could you 比 can you 更礼貌' },
+      { from: /\bI will\b/gi, to: "I'll", note: '口语中多用缩写' },
+      { from: /\bdo not\b/gi, to: "don't", note: '口语中多用缩写' },
+      { from: /\bis not\b/gi, to: "isn't", note: '口语中多用缩写' },
+      { from: /\bare not\b/gi, to: "aren't", note: '口语中多用缩写' },
+      { from: /\bhave not\b/gi, to: "haven't", note: '口语中多用缩写' },
+      { from: /\bhas not\b/gi, to: "hasn't", note: '口语中多用缩写' },
+      { from: /\bcan not\b/gi, to: "can't", note: '口语中多用缩写' },
+      { from: /\bwill not\b/gi, to: "won't", note: '口语中多用缩写' },
+    ];
+
+    const upgradeNotes = [];
+    upgrades.forEach(u => {
+      if (u.from.test(improved)) {
+        upgradeNotes.push({ original: improved.match(u.from)?.[0] || '', improved: u.to, note: u.note });
+        improved = improved.replace(u.from, u.to);
+      }
+    });
+
+    fixes.push({ original: s, fixed, improved, sentenceFixes, upgradeNotes });
+    polished += improved + ' ';
   });
 
+  polished = polished.trim();
+
+  // 高频搭配推荐
   const collocations = [
-    { keywords: ['meeting'], pairs: ['schedule a meeting', 'call a meeting', 'wrap up a meeting'] },
-    { keywords: ['deadline'], pairs: ['meet a deadline', 'tight deadline', 'looming deadline'] },
-    { keywords: ['job', 'work'], pairs: ['land a job', 'take on a project', 'pull your weight'] },
-    { keywords: ['study', 'learn'], pairs: ['brush up on', 'get the hang of', 'learn the ropes'] },
-    { keywords: ['problem'], pairs: ['solve a problem', 'address an issue', 'work around'] },
-    { keywords: ['agree'], pairs: ['see eye to eye', 'on the same page', 'come to an agreement'] },
-    { keywords: ['busy'], pairs: ['swamped', 'tied up', 'a packed schedule'] },
-    { keywords: ['tired'], pairs: ['burned out', 'worn out', 'exhausted'] },
-    { keywords: ['happy'], pairs: ['thrilled', 'delighted', 'over the moon'] },
+    { keywords: ['meeting'], pairs: ['schedule a meeting', 'call a meeting', 'wrap up a meeting', 'touch base', 'circle back'] },
+    { keywords: ['deadline'], pairs: ['meet a deadline', 'tight deadline', 'looming deadline', 'beat the deadline'] },
+    { keywords: ['job', 'work'], pairs: ['land a job', 'take on a project', 'pull your weight', 'get the ball rolling'] },
+    { keywords: ['study', 'learn'], pairs: ['brush up on', 'get the hang of', 'learn the ropes', 'pick up'] },
+    { keywords: ['problem', 'issue'], pairs: ['sort out', 'work around', 'get to the bottom of', 'iron out'] },
+    { keywords: ['agree'], pairs: ['see eye to eye', 'on the same page', 'come around', 'get on board'] },
+    { keywords: ['busy'], pairs: ['swamped', 'tied up', 'a packed schedule', 'snowed under'] },
+    { keywords: ['tired'], pairs: ['burned out', 'worn out', 'drained', 'running on fumes'] },
+    { keywords: ['happy', 'excited'], pairs: ['thrilled', 'delighted', 'over the moon', 'on cloud nine'] },
+    { keywords: ['start'], pairs: ['kick off', 'get started on', 'dive into', 'jump into'] },
+    { keywords: ['finish'], pairs: ['wrap up', 'get through', 'knock out', 'call it a day'] },
+    { keywords: ['help'], pairs: ['give a hand', 'pitch in', 'lend a hand', 'have your back'] },
   ];
 
   const matchedCollocations = [];
   collocations.forEach(group => {
-    if (group.keywords.some(k => text.toLowerCase().includes(k))) {
+    if (group.keywords.some(k => polished.toLowerCase().includes(k))) {
       matchedCollocations.push(...group.pairs);
     }
   });
 
-  let html = '<div style="line-height:1.7;">';
-  if (issues.length > 0) {
-    html += '<h4 style="color:var(--danger);margin-bottom:8px;">📝 需要修改的地方</h4><ul style="padding-left:18px;margin-bottom:12px;">';
-    issues.forEach(r => {
-      html += `<li style="margin-bottom:6px;"><strong>${r.explain}</strong><br><span style="color:var(--text-muted)">建议改为：</span>${escapeHtml(r.correct)}</li>`;
+  // 构建 HTML 输出
+  let html = '<div style="line-height:1.8;">';
+
+  // 逐句分析
+  const hasIssues = fixes.some(f => f.sentenceFixes.length > 0 || f.upgradeNotes.length > 0);
+  if (hasIssues) {
+    html += '<h4 style="margin-bottom:10px;">📝 逐句修改建议</h4>';
+    fixes.forEach((f, i) => {
+      if (f.sentenceFixes.length === 0 && f.upgradeNotes.length === 0) return;
+      html += `<div style="background:var(--bg-input);padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:10px;">`;
+      html += `<p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">原文：</p>`;
+      html += `<p style="margin-bottom:8px;font-style:italic;">${escapeHtml(f.original)}</p>`;
+
+      f.sentenceFixes.forEach(sf => {
+        html += `<p style="font-size:13px;margin-bottom:4px;"><span style="color:var(--danger);text-decoration:line-through;">${escapeHtml(sf.original)}</span> → <span style="color:var(--success);font-weight:600;">${escapeHtml(sf.fix)}</span><br><span style="color:var(--text-muted);font-size:11px;">${escapeHtml(sf.tip)}</span></p>`;
+      });
+
+      f.upgradeNotes.forEach(un => {
+        html += `<p style="font-size:13px;margin-bottom:4px;">💬 <span style="color:var(--warning);text-decoration:line-through;">${escapeHtml(un.original)}</span> → <span style="color:var(--accent);font-weight:600;">${escapeHtml(un.improved)}</span><br><span style="color:var(--text-muted);font-size:11px;">${escapeHtml(un.note)}</span></p>`;
+      });
+
+      html += `</div>`;
     });
-    html += '</ul>';
   }
-  if (corrected !== text) {
-    html += '<h4 style="margin:12px 0 8px;">✨ 润色后</h4>';
-    html += `<div style="background:var(--bg-input);padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:12px;">${escapeHtml(corrected)}</div>`;
-  }
+
+  // 润色后全文
+  html += '<h4 style="margin:14px 0 8px;">✨ 润色后全文</h4>';
+  html += `<div style="background:var(--success-bg);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:15px;line-height:1.8;">${escapeHtml(polished)}</div>`;
+
+  // 高频搭配
   if (matchedCollocations.length > 0) {
-    html += '<h4 style="margin:12px 0 8px;">💡 相关高频搭配</h4><div style="display:flex;flex-wrap:wrap;gap:6px;">';
-    [...new Set(matchedCollocations)].slice(0, 6).forEach(p => {
-      html += `<span style="background:var(--accent-bg);color:var(--accent);padding:4px 10px;border-radius:20px;font-size:12px;">${escapeHtml(p)}</span>`;
+    html += '<h4 style="margin:12px 0 8px;">💡 相关高频搭配</h4>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">';
+    [...new Set(matchedCollocations)].slice(0, 8).forEach(p => {
+      html += `<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">${escapeHtml(p)}</span>`;
     });
     html += '</div>';
   }
-  if (issues.length === 0 && corrected === text) {
-    html += '<p style="color:var(--success);">✓ 未检测到常见问题，整体表达不错！</p>';
+
+  if (!hasIssues) {
+    html += '<p style="color:var(--success);margin-bottom:8px;">✓ 未检测到常见问题，整体表达流畅！</p>';
   }
+
   html += '</div>';
   return html;
 }
