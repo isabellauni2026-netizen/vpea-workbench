@@ -1,0 +1,4893 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="工作台">
+<title>VPEA 工作台</title>
+<style>
+/* ============================================
+   VPEA 工作台 v2 - Apple 风格设计系统
+   自动深浅色切换 + 毛玻璃 + 圆角
+   ============================================ */
+
+/* ---- 设计 Token ---- */
+:root {
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  /* 间距 */
+  --space-card: 16px;
+  /* 毛玻璃 */
+  --blur-glass: saturate(180%) blur(20px);
+}
+
+/* ---- 浅色主题（默认） ---- */
+:root {
+  --bg-primary: #f5f5f7;
+  --bg-sidebar: rgba(255, 255, 255, 0.72);
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-card-solid: #ffffff;
+  --bg-input: rgba(118, 118, 128, 0.08);
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-muted: #8e8e93;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-bg: rgba(0, 113, 227, 0.1);
+  --success: #34c759;
+  --success-bg: rgba(52, 199, 89, 0.12);
+  --danger: #ff3b30;
+  --danger-bg: rgba(255, 59, 48, 0.1);
+  --warning: #ff9500;
+  --warning-bg: rgba(255, 149, 0, 0.12);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --highlight: #ff9500;
+  --highlight-bg: rgba(255, 149, 0, 0.12);
+  --strike: #8e8e93;
+  --purple: #af52de;
+  --purple-bg: rgba(175, 82, 222, 0.1);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 2px 8px rgba(0, 0, 0, 0.08), 0 12px 40px rgba(0, 0, 0, 0.06);
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+}
+
+/* ---- 暗色主题（跟随系统） ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #000000;
+    --bg-sidebar: rgba(28, 28, 30, 0.72);
+    --bg-card: rgba(28, 28, 30, 0.8);
+    --bg-card-solid: #1c1c1e;
+    --bg-input: rgba(118, 118, 128, 0.24);
+    --text-primary: #f5f5f7;
+    --text-secondary: #aeaeb2;
+    --text-muted: #636366;
+    --accent: #0a84ff;
+    --accent-hover: #409cff;
+    --accent-bg: rgba(10, 132, 255, 0.15);
+    --success: #30d158;
+    --success-bg: rgba(48, 209, 88, 0.15);
+    --danger: #ff453a;
+    --danger-bg: rgba(255, 69, 58, 0.15);
+    --warning: #ff9f0a;
+    --warning-bg: rgba(255, 159, 10, 0.15);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --highlight: #ff9f0a;
+    --highlight-bg: rgba(255, 159, 10, 0.15);
+    --strike: #636366;
+    --purple: #bf5af2;
+    --purple-bg: rgba(191, 90, 242, 0.15);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-elevated: 0 2px 8px rgba(0, 0, 0, 0.4), 0 12px 40px rgba(0, 0, 0, 0.5);
+    --sidebar-border: rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* ---- 基础重置 ---- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+#app { display: flex; min-height: 100vh; }
+
+/* ---- 滚动条 ---- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ============ 左侧导航栏 ============ */
+.sidebar {
+  width: 210px;
+  background: var(--bg-sidebar);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-right: 1px solid var(--sidebar-border);
+  padding: 16px 0;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand {
+  padding: 4px 18px 14px;
+  border-bottom: 1px solid var(--sidebar-border);
+  margin-bottom: 6px;
+}
+.sidebar-brand h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.sidebar-brand .date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.sidebar-nav { flex: 1; padding: 4px 0; overflow-y: auto; }
+
+.nav-group {
+  padding: 4px 0;
+}
+.nav-group-label {
+  padding: 8px 18px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 18px;
+  margin: 1px 8px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.nav-item:hover {
+  background: var(--accent-bg);
+  color: var(--text-primary);
+}
+.nav-item.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 600;
+}
+.nav-item .icon { font-size: 15px; line-height: 1; width: 20px; text-align: center; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 10px 12px;
+  border-top: 1px solid var(--sidebar-border);
+  margin-top: auto;
+}
+.sidebar-footer .nav-item {
+  padding: 6px 10px;
+  margin: 0;
+  font-size: 12px;
+}
+
+/* ============ 主内容 ============ */
+.main-content {
+  margin-left: 210px;
+  flex: 1;
+  padding: 24px 28px;
+  max-width: 1060px;
+}
+
+.module { display: none; }
+.module.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ 紧凑卡片 ============ */
+.module-header {
+  margin-bottom: 16px;
+}
+.module-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.module-header .subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-elevated);
+}
+.card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.card p, .card .hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* 输入行 */
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.input-row input, .input-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 标签 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+.tag .remove-tag {
+  cursor: pointer;
+  opacity: 0.5;
+  font-size: 10px;
+}
+.tag .remove-tag:hover { opacity: 1; color: var(--danger); }
+
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.module-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.btn-refresh {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-refresh:hover {
+  background: var(--accent-hover);
+  transform: scale(1.02);
+}
+.btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.hint { color: var(--text-muted); font-size: 13px; margin-bottom: 12px; }
+.inspiration-meta { margin-bottom: 20px; }
+.last-update { font-size: 12px; color: var(--text-muted); }
+
+/* ============ 输入框通用 ============ */
+.todo-input, .deadline-input, .report-input, .dream-input,
+.savings-input, .savings-select, .stock-input, .stock-input-small,
+.english-textarea, .paraphrase-input, .savings-select {
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+}
+.todo-input:focus, .deadline-input:focus, .report-input:focus, .dream-input:focus,
+.savings-input:focus, .savings-select:focus, .stock-input:focus, .stock-input-small:focus,
+.english-textarea:focus, .paraphrase-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+  background: var(--bg-card-solid);
+}
+.savings-select { cursor: pointer; }
+
+/* ============ 按钮 ============ */
+.btn-add {
+  background: var(--success);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-add:hover { opacity: 0.9; transform: scale(1.02); }
+.btn-add:active { transform: scale(0.98); }
+
+.btn-improve {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 12px;
+  transition: all 0.2s ease;
+}
+.btn-improve:hover { background: var(--accent-hover); transform: scale(1.02); }
+.btn-improve:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ============ 待办清单 ============ */
+.todo-input-area {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.todo-input { flex: 1; min-width: 200px; }
+
+.todo-list { list-style: none; }
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+.todo-item:hover { box-shadow: var(--shadow-elevated); transform: translateY(-1px); }
+.todo-item.completed { opacity: 0.6; }
+
+.todo-checkbox {
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  cursor: pointer;
+  accent-color: var(--success);
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+.todo-content { flex: 1; }
+.todo-text {
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: var(--strike);
+}
+.todo-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.todo-deadline.overdue {
+  color: var(--danger);
+  font-weight: 500;
+}
+.todo-report { color: var(--warning); }
+.todo-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+.todo-delete:hover { color: var(--danger); }
+
+/* ============ 卡片通用 ============ */
+.loading-placeholder {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-strong);
+}
+.news-card, .article-card, .english-card, .italian-card, .recipe-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+.news-card:hover, .article-card:hover, .english-card:hover, .italian-card:hover {
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-1px);
+}
+.news-card h4, .article-card h4, .english-card h4, .italian-card h4 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.news-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-right: 6px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 500;
+}
+.news-tag.edu { background: var(--success-bg); color: var(--success); }
+.news-tag.visa { background: var(--warning-bg); color: var(--warning); }
+.news-summary { font-size: 14px; color: var(--text-secondary); margin: 8px 0; line-height: 1.6; }
+.news-source { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+.news-source a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.news-source a:hover { opacity: 0.7; text-decoration: underline; }
+.inspiration-suggestion {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--highlight-bg);
+  border-left: 3px solid var(--highlight);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.inspiration-suggestion strong { color: var(--highlight); }
+
+/* ============ VPEA 今日主题建议 ============ */
+.topic-suggestion-area {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--highlight);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.topic-title { font-size: 18px; margin-bottom: 14px; color: var(--highlight); font-weight: 600; }
+.topic-content { font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
+.topic-content .topic-block {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--border);
+}
+.topic-content .topic-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.topic-content .outline-item { padding: 4px 0 4px 16px; position: relative; }
+.topic-content .outline-item::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+.topic-content strong { color: var(--text-primary); }
+.topic-content em { color: var(--accent); font-style: normal; }
+
+/* ============ 梦境 + 解梦 ============ */
+.dream-input-area {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-card);
+}
+.dream-result { margin-bottom: 20px; }
+.dream-article {
+  padding: 24px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.dream-article h3 { margin-bottom: 12px; color: var(--accent); font-weight: 600; }
+.dream-article .zh-version, .dream-article .en-version {
+  font-size: 15px;
+  line-height: 1.8;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+}
+.dream-article .en-version { color: var(--text-secondary); font-style: italic; }
+
+.dream-interpretation {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--purple);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.dream-interpretation .topic-title { color: var(--purple); }
+.interpretation-content { font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
+.interpretation-content .interp-section { margin-bottom: 14px; }
+.interpretation-content .interp-section h4 { font-size: 15px; color: var(--text-primary); margin-bottom: 6px; font-weight: 600; }
+.interpretation-content .interp-quote {
+  padding: 10px 14px;
+  background: var(--purple-bg);
+  border-radius: var(--radius-sm);
+  font-style: italic;
+  color: var(--purple);
+  margin: 10px 0;
+}
+.interpretation-content .interp-symbol {
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--purple-bg);
+  color: var(--purple);
+  border-radius: 6px;
+  font-size: 12px;
+  margin: 2px 4px 2px 0;
+}
+
+/* ============ 股票 ============ */
+.stocks-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.stocks-news { display: flex; flex-direction: column; gap: 12px; }
+.portfolio-area {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+.portfolio-area h3 { margin-bottom: 16px; font-size: 18px; font-weight: 600; }
+.portfolio-input-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.portfolio-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-size: 13px;
+  gap: 8px;
+}
+.portfolio-item-main { flex: 1; min-width: 0; }
+.portfolio-item-symbol {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.portfolio-item-symbol strong { font-size: 14px; }
+.portfolio-market {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 500;
+}
+.portfolio-item-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.portfolio-item-info .sep { color: var(--border-strong); }
+.portfolio-item-pnl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-top: 2px;
+}
+.pnl-pct { font-size: 11px; }
+.price-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.portfolio-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.pnl-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pnl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.pnl-row.total {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.portfolio-summary { padding-top: 16px; border-top: 1px solid var(--border); }
+.summary-content { font-size: 14px; color: var(--text-secondary); }
+
+/* ============ 存款 ============ */
+.savings-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.savings-input-area {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+.savings-input-area h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; }
+.savings-form { display: flex; flex-direction: column; gap: 10px; }
+
+.savings-summary { display: flex; flex-direction: column; gap: 12px; }
+.balance-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+.balance-card h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+.balance-card .balance { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.balance-card.cash .balance { color: var(--success); }
+.balance-card.savings .balance { color: var(--accent); }
+.balance-card.total {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+.balance-card.total .balance { color: var(--highlight); }
+
+.savings-list { display: flex; flex-direction: column; gap: 6px; }
+.savings-item {
+  display: grid;
+  grid-template-columns: 100px 80px 100px 1fr 120px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.savings-item .type-expense { color: var(--danger); }
+.savings-item .type-income { color: var(--success); }
+.savings-item .type-auto-debit { color: var(--warning); }
+
+/* ============ 英语学习(工作) ============ */
+.english-content { display: flex; flex-direction: column; gap: 20px; }
+.english-card .bilingual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+.english-card .bilingual .en, .english-card .bilingual .zh {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.english-card .bilingual .en { border-right: 1px solid var(--border); padding-right: 16px; }
+.english-card .vocab-list { margin: 12px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.vocab-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--highlight-bg);
+  color: var(--highlight);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.vocab-tag .speak-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 2px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+.vocab-tag .speak-btn:hover { opacity: 1; }
+.speak-paragraph {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  font-weight: 500;
+}
+.speak-paragraph:hover { background: var(--accent-bg); }
+.speak-paragraph.speaking { background: var(--accent-bg); }
+.recipe-xhs-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 46, 69, 0.08);
+  color: #ff2e45;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.recipe-xhs-link:hover {
+  background: rgba(255, 46, 69, 0.15);
+  border-color: rgba(255, 46, 69, 0.3);
+}
+.highlight-sentence {
+  background: var(--highlight-bg);
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: var(--highlight);
+}
+.paraphrase-area { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.paraphrase-area label { font-size: 13px; color: var(--accent); display: block; margin-bottom: 6px; font-weight: 500; }
+.paraphrase-input {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  min-height: 60px;
+  resize: vertical;
+  font-family: inherit;
+}
+.paraphrase-input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+.feedback-area {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--success-bg);
+  border-left: 3px solid var(--success);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.feedback-area strong { color: var(--success); }
+
+/* ============ 英语学习(生活) ============ */
+.el-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.el-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+.el-tab:hover { color: var(--text-primary); }
+.el-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.el-panel { display: none; }
+.el-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+.english-textarea {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 14px;
+  min-height: 140px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+}
+.english-textarea:focus { outline: none; box-shadow: 0 0 0 2px var(--accent); background: var(--bg-card-solid); }
+
+.improve-result { margin-top: 16px; display: none; }
+.improve-result.show { display: block; animation: fadeIn 0.3s ease; }
+.improve-result .improved-version {
+  padding: 16px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--success);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.improve-result .original {
+  padding: 12px;
+  background: rgba(142, 142, 147, 0.08);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---- 录音按钮 ---- */
+.recorder-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+.btn-record {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--danger);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.btn-record:hover { transform: scale(1.05); box-shadow: 0 0 0 4px var(--danger-bg); }
+.btn-record.recording {
+  background: var(--danger);
+  animation: pulse 1.2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--danger-bg); }
+  50% { box-shadow: 0 0 0 8px transparent; }
+}
+.recorder-status {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex: 1;
+}
+.recorder-status.recording { color: var(--danger); font-weight: 500; }
+
+/* ============ 资料上传 ============ */
+.upload-area { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.file-input { flex: 1; min-width: 200px; color: var(--text-secondary); font-size: 13px; }
+.resource-result { margin-top: 16px; }
+.saved-resources { margin-top: 20px; }
+.saved-resource-item {
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+/* ============ 减肥 ============ */
+.diet-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.diet-goal-card, .diet-weight-card, .diet-food-section, .diet-recipe-section {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+.diet-goal-card h3, .diet-weight-card h3, .diet-food-section h3, .diet-recipe-section h3 {
+  font-size: 16px; margin-bottom: 16px; font-weight: 600;
+}
+.goal-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.goal-field { display: flex; flex-direction: column; gap: 6px; }
+.goal-field label { font-size: 12px; color: var(--text-muted); }
+.goal-field input { width: 120px; }
+.goal-display {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+}
+.goal-display .goal-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+.goal-display .progress-bar {
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.goal-display .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--accent));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.weight-track-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+.weight-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.weight-item .weight-change.up { color: var(--danger); }
+.weight-item .weight-change.down { color: var(--success); }
+.diet-input-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.diet-log-list { display: flex; flex-direction: column; gap: 6px; }
+.diet-log-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.diet-log-item .meal-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  min-width: 50px;
+  text-align: center;
+  font-weight: 500;
+}
+.meal-type.breakfast { background: var(--warning-bg); color: var(--warning); }
+.meal-type.lunch { background: var(--accent-bg); color: var(--accent); }
+.meal-type.dinner { background: var(--purple-bg); color: var(--purple); }
+.meal-type.snack { background: rgba(142, 142, 147, 0.15); color: var(--text-muted); }
+
+.ingredient-input-area { display: flex; gap: 10px; margin-bottom: 12px; }
+.ingredient-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; min-height: 30px; }
+.ingredient-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--success-bg);
+  color: var(--success);
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ingredient-tag .remove-tag { cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
+.ingredient-tag .remove-tag:hover { opacity: 1; }
+.recipe-result { margin-top: 16px; }
+.recipe-card {
+  padding: 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+.recipe-card h4 { font-size: 16px; margin-bottom: 8px; color: var(--text-primary); font-weight: 600; }
+.recipe-card .recipe-meal-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-left: 8px;
+  font-weight: 500;
+}
+.recipe-card .recipe-ingredients { font-size: 13px; color: var(--text-muted); margin: 6px 0; }
+.recipe-card .recipe-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ============ 意大利语 ============ */
+.italian-level-area {
+  margin-bottom: 20px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+.level-buttons { display: flex; gap: 8px; margin-top: 8px; }
+.level-btn {
+  padding: 8px 16px;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.level-btn:hover { border-color: var(--accent); }
+.level-btn.active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.italian-progress {
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
+}
+.italian-progress .progress-stats { display: flex; gap: 24px; }
+.italian-progress .stat-item strong { color: var(--accent); font-size: 16px; font-weight: 600; }
+.italian-content { display: flex; flex-direction: column; gap: 20px; }
+.italian-card .card-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.italian-card .card-label.grammar { background: var(--accent-bg); color: var(--accent); }
+.italian-card .card-label.vocab { background: var(--highlight-bg); color: var(--highlight); }
+.italian-card .card-label.dialogue { background: var(--success-bg); color: var(--success); }
+.italian-card .grammar-explanation { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px; }
+.italian-card .grammar-examples {
+  padding: 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  margin: 8px 0;
+  font-size: 14px;
+}
+.italian-card .grammar-examples .ex-line { margin-bottom: 4px; }
+.italian-card .grammar-examples .it { color: var(--accent); }
+.italian-card .grammar-examples .zh { color: var(--text-muted); font-size: 12px; }
+.italian-card .vocab-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+.italian-card .vocab-table th, .italian-card .vocab-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.italian-card .vocab-table th { color: var(--text-muted); font-weight: 500; font-size: 12px; }
+.italian-card .vocab-table .it-word { color: var(--highlight); font-weight: 500; }
+.italian-card .dialogue-content { padding: 14px; background: var(--bg-input); border-radius: var(--radius-sm); margin: 8px 0; }
+.italian-card .dialogue-line { margin-bottom: 8px; font-size: 14px; }
+.italian-card .dialogue-line .speaker { font-weight: 600; color: var(--accent); }
+.italian-card .dialogue-line .it-text { color: var(--text-primary); }
+.italian-card .dialogue-line .zh-text { color: var(--text-muted); font-size: 12px; }
+.italian-card .sentence-practice {
+  padding: 14px;
+  background: var(--purple-bg);
+  border-left: 3px solid var(--purple);
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+}
+.italian-card .sentence-practice label { font-size: 13px; color: var(--purple); display: block; margin-bottom: 6px; font-weight: 500; }
+.italian-card .sentence-practice textarea {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  min-height: 60px;
+  resize: vertical;
+  font-family: inherit;
+}
+.italian-card .sentence-practice textarea:focus { outline: none; box-shadow: 0 0 0 2px var(--purple); }
+
+/* ============ 随机灵感 ============ */
+.random-input-area { margin-bottom: 20px; }
+.random-actions { display: flex; gap: 10px; margin-top: 12px; }
+.inspiration-list { display: flex; flex-direction: column; gap: 8px; }
+.inspiration-item {
+  padding: 14px 16px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.inspiration-item-content { font-size: 14px; margin-bottom: 6px; }
+.inspiration-item-meta { font-size: 12px; color: var(--text-muted); }
+.inspiration-item-expand {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--purple-bg);
+  border-left: 3px solid var(--purple);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.inspiration-item-expand strong { color: var(--purple); }
+
+/* ============ 响应式 ============ */
+@media (max-width: 900px) {
+  .sidebar { width: 56px; padding: 12px 0; }
+  .sidebar-brand { padding: 4px 8px 10px; margin-bottom: 4px; }
+  .sidebar-brand h1, .sidebar-brand .date, .nav-group-label,
+  .nav-item span:last-child, .sidebar-footer .nav-item span:last-child { display: none; }
+  .nav-item { justify-content: center; padding: 8px; margin: 1px 4px; border-radius: 6px; }
+  .nav-item .icon { font-size: 18px; width: auto; }
+  .sidebar-footer .nav-item { padding: 8px; }
+  .main-content { margin-left: 56px; padding: 20px 16px; }
+  .stocks-layout, .savings-layout, .diet-layout { grid-template-columns: 1fr; }
+  .english-card .bilingual { grid-template-columns: 1fr; }
+  .english-card .bilingual .en {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    padding-right: 0;
+  }
+  .dream-form { grid-template-columns: 1fr; }
+  .savings-item { grid-template-columns: 1fr; gap: 4px; }
+  .italian-progress .progress-stats { flex-direction: column; gap: 8px; }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--sidebar-border);
+    padding: 4px 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .sidebar-brand, .sidebar-footer, .nav-group-label { display: none; }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    gap: 0;
+    width: 100%;
+    justify-content: space-around;
+  }
+  .nav-group { display: flex; flex-direction: row; padding: 0; }
+  .nav-item {
+    flex-direction: column;
+    padding: 5px 6px;
+    margin: 0;
+    border-radius: 6px;
+    font-size: 9px;
+    gap: 3px;
+    min-width: 48px;
+    justify-content: center;
+  }
+  .nav-item .icon { font-size: 16px; width: auto; }
+  .nav-item span:last-child { display: block !important; font-size: 8px; }
+  .main-content {
+    margin-left: 0;
+    margin-bottom: 68px;
+    padding: 16px 12px;
+  }
+  .module-header h2 { font-size: 20px; }
+  .savings-item { grid-template-columns: 1fr; gap: 4px; }
+  .portfolio-input-row { flex-direction: column; }
+  .stock-input-small { width: 100%; }
+  .toast { bottom: 80px; }
+  #smartFab { bottom: 76px; }
+}
+
+/* ---- Toast 通知 ---- */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  font-size: 14px;
+  z-index: 1000;
+  animation: toastIn 0.3s ease;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ============ AI 智能输入浮窗 ============ */
+#smartFab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 900;
+}
+.fab-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #0071e3, #0a84ff);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 113, 227, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fab-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(0, 113, 227, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.fab-btn:active { transform: scale(0.95); }
+#smartFab.active .fab-btn { transform: scale(0.9); opacity: 0.7; }
+
+/* 浮窗面板 */
+.smart-panel {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 901;
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+.smart-panel.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.smart-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-bg), transparent);
+}
+.smart-bot-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0071e3, #0a84ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.smart-panel-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.smart-panel-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+.smart-panel-close:hover { background: var(--bg-input); color: var(--text-primary); }
+
+.smart-panel-body { padding: 16px 20px 20px; }
+.smart-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+.smart-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.smart-example {
+  padding: 5px 12px;
+  background: var(--bg-input);
+  border-radius: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.smart-example:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.smart-textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 14px;
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.smart-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+  background: var(--bg-card-solid);
+}
+
+.smart-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.smart-submit-btn:hover { background: var(--accent-hover); transform: scale(1.01); }
+.smart-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.smart-result { margin-top: 12px; min-height: 0; }
+.smart-thinking {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  animation: pulse-text 1.5s infinite;
+}
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.smart-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  background: var(--success-bg);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--success);
+  animation: fadeIn 0.3s ease;
+}
+.smart-success-icon { font-size: 20px; flex-shrink: 0; }
+.smart-success strong { display: block; color: var(--success); font-size: 14px; margin-bottom: 2px; }
+.smart-success-reason { font-size: 12px; color: var(--text-secondary); margin: 0; }
+.smart-error {
+  padding: 12px;
+  background: var(--danger-bg);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--danger);
+  font-size: 13px;
+  color: var(--danger);
+}
+
+@media (max-width: 600px) {
+  .smart-panel {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    bottom: 88px;
+  }
+  #smartFab { bottom: 16px; right: 16px; }
+}
+
+/* ============ 读书笔记模块 ============ */
+.books-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.book-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+  position: relative;
+}
+.book-card:hover { box-shadow: var(--shadow-elevated); }
+.book-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.book-card-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+/* 封面 hover 显示"更换" */
+.book-card:hover .cover-hover-hint { opacity: 1 !important; }
+.book-rating {
+  display: flex;
+  gap: 2px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.book-rating .star { color: var(--border-strong); transition: color 0.15s; }
+.book-rating .star.filled { color: #f5a623; }
+.book-rating .star:hover { color: #f5a623; }
+.book-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.book-meta .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+.book-summary {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  max-height: 120px;
+  overflow-y: auto;
+}
+.book-thoughts {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  font-style: italic;
+  padding-left: 12px;
+  border-left: 2px solid var(--accent);
+}
+.book-excerpts { margin-bottom: 12px; }
+.book-excerpts h4, .book-vocab h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.excerpt-item {
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.excerpt-item:hover { background: var(--accent-bg); }
+.excerpt-item .excerpt-lang {
+  font-size: 10px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.excerpt-item .excerpt-delete {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  color: var(--danger);
+  transition: opacity 0.15s;
+}
+.excerpt-item:hover .excerpt-delete { opacity: 1; }
+
+/* 单词表 */
+.vocab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.vocab-table th {
+  text-align: left;
+  padding: 6px 8px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+.vocab-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.vocab-table td:first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.vocab-table tr:hover td { background: var(--accent-bg); }
+.vocab-table .vocab-delete {
+  cursor: pointer;
+  opacity: 0;
+  color: var(--danger);
+  font-size: 11px;
+  transition: opacity 0.15s;
+}
+.vocab-table tr:hover .vocab-delete { opacity: 1; }
+
+/* 添加书表单 */
+.add-book-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.add-book-form .full-width { grid-column: 1 / -1; }
+.add-book-form input, .add-book-form textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+.add-book-form textarea { min-height: 60px; }
+
+/* 摘录输入区 */
+.excerpt-input-area {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.excerpt-input-area textarea {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  min-height: 48px;
+  resize: vertical;
+}
+
+/* 生词输入 */
+.vocab-input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: end;
+}
+.vocab-input-row input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+/* 书籍操作按钮 */
+.book-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+.btn-sm:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+.btn-sm.danger { color: var(--danger); }
+.btn-sm.danger:hover { background: var(--danger-bg); border-color: var(--danger); }
+
+@media (max-width: 900px) {
+  .books-list { grid-template-columns: 1fr; }
+  .add-book-form { grid-template-columns: 1fr; }
+  .vocab-input-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 左侧导航栏 -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h1>工作台</h1>
+      <div class="date" id="currentDate"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">日常</div>
+        <a href="#todo-life" class="nav-item active" data-module="todo-life">
+          <span class="icon">✓</span><span>生活待办</span>
+        </a>
+        <a href="#todo-work" class="nav-item" data-module="todo-work">
+          <span class="icon">✓</span><span>工作待办</span>
+        </a>
+        <a href="#diet" class="nav-item" data-module="diet">
+          <span class="icon">🥗</span><span>减肥记录</span>
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">创作</div>
+        <a href="#vpea-inspiration" class="nav-item" data-module="vpea-inspiration">
+          <span class="icon">💡</span><span>VPEA 灵感</span>
+        </a>
+        <a href="#random-inspiration" class="nav-item" data-module="random-inspiration">
+          <span class="icon">✨</span><span>随机灵感</span>
+        </a>
+        <a href="#dream" class="nav-item" data-module="dream">
+          <span class="icon">🌙</span><span>梦境记录</span>
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">财务</div>
+        <a href="#stocks" class="nav-item" data-module="stocks">
+          <span class="icon">📈</span><span>股票</span>
+        </a>
+        <a href="#savings" class="nav-item" data-module="savings">
+          <span class="icon">💰</span><span>我的存款</span>
+        </a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">学习</div>
+        <a href="#english-work" class="nav-item" data-module="english-work">
+          <span class="icon">📚</span><span>英语(工作)</span>
+        </a>
+        <a href="#english-life" class="nav-item" data-module="english-life">
+          <span class="icon">🗣</span><span>英语(生活)</span>
+        </a>
+        <a href="#italian" class="nav-item" data-module="italian">
+          <span class="icon">🇮🇹</span><span>意大利语</span>
+        </a>
+        <a href="#reading" class="nav-item" data-module="reading">
+          <span class="icon">📖</span><span>读书笔记</span>
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="#" class="nav-item" onclick="setOpenAIKey();return false;">
+        <span class="icon">🔑</span><span>语音设置</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="main-content">
+    <!-- 1. 生活待办 -->
+    <section id="todo-life" class="module active">
+      <div class="module-header">
+        <h2>生活待办清单</h2>
+        <button class="btn-refresh" onclick="refreshModule('todo-life')">刷新灵感</button>
+      </div>
+      <div class="todo-input-area">
+        <input type="text" id="todoLifeInput" placeholder="添加待办事项..." class="todo-input">
+        <input type="datetime-local" id="todoLifeDeadline" class="deadline-input">
+        <button onclick="addTodo('life')" class="btn-add">添加</button>
+      </div>
+      <ul id="todoLifeList" class="todo-list"></ul>
+    </section>
+
+    <!-- 2. 工作待办 -->
+    <section id="todo-work" class="module">
+      <div class="module-header">
+        <h2>工作待办清单</h2>
+        <button class="btn-refresh" onclick="refreshModule('todo-work')">刷新灵感</button>
+      </div>
+      <div class="todo-input-area">
+        <input type="text" id="todoWorkInput" placeholder="添加工作待办..." class="todo-input">
+        <input type="datetime-local" id="todoWorkDeadline" class="deadline-input">
+        <input type="text" id="todoWorkReportTo" placeholder="完成后汇报给..." class="report-input">
+        <button onclick="addTodo('work')" class="btn-add">添加</button>
+      </div>
+      <ul id="todoWorkList" class="todo-list"></ul>
+    </section>
+
+    <!-- 3. VPEA 公众号灵感 -->
+    <section id="vpea-inspiration" class="module">
+      <div class="module-header">
+        <h2>VPEA 公众号文章灵感</h2>
+        <button class="btn-refresh" onclick="refreshModule('vpea-inspiration')">今日更新</button>
+      </div>
+      <div class="inspiration-meta">
+        <span class="last-update">最后更新：<span id="vpeaLastUpdate">-</span></span>
+        <p class="hint">每日 10 条教育/留学/签证移民热点（聚焦加拿大）+ 文章选题建议</p>
+      </div>
+      <div id="vpeaContent" class="inspiration-content">
+        <div class="loading-placeholder">点击「今日更新」获取最新灵感</div>
+      </div>
+      <div id="vpeaTopicSuggestion" class="topic-suggestion-area" style="display:none;">
+        <h3 class="topic-title">📌 今日主题建议</h3>
+        <div id="vpeaTopicContent" class="topic-content"></div>
+      </div>
+    </section>
+
+    <!-- 4. 股票 -->
+    <section id="stocks" class="module">
+      <div class="module-header">
+        <h2>股票追踪</h2>
+        <button class="btn-refresh" onclick="refreshModule('stocks')">今日分析</button>
+      </div>
+      <div class="inspiration-meta">
+        <span class="last-update">最后更新：<span id="stocksLastUpdate">-</span></span>
+        <p class="hint">手动管理持仓：填写代码、成本价、市场价和盈亏状态。点击「今日分析」获取每日走势分析和买卖建议。</p>
+      </div>
+      <div class="stocks-layout">
+        <div id="stocksNews" class="stocks-news">
+          <div class="loading-placeholder">点击「今日分析」基于你的持仓生成走势分析和买卖建议</div>
+        </div>
+        <div class="portfolio-area">
+          <h3>我的持仓</h3>
+          <div class="portfolio-input-row">
+            <input type="text" id="stockSymbol" placeholder="代码 (如 AAPL)" class="stock-input">
+            <input type="number" id="stockShares" placeholder="股数" class="stock-input-small">
+            <input type="number" id="stockCostPrice" placeholder="成本价" class="stock-input-small" step="0.01">
+            <input type="number" id="stockMarketPrice" placeholder="市场价" class="stock-input-small" step="0.01">
+            <button onclick="addStock()" class="btn-add">添加</button>
+          </div>
+          <div class="portfolio-input-row" style="margin-bottom:16px;">
+            <input type="text" id="stockPnlNote" placeholder="盈亏备注 (如：目前赚$320 / 亏$150)" class="stock-input" style="flex:2;">
+            <button onclick="batchAddStocks()" class="btn-sm" style="flex-shrink:0;">批量更新盈亏</button>
+          </div>
+          <div id="portfolioList" class="portfolio-list"></div>
+          <div class="portfolio-summary">
+            <h4>盈亏总览</h4>
+            <div id="portfolioSummary" class="summary-content">暂无持仓</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 我的存款 -->
+    <section id="savings" class="module">
+      <div class="module-header">
+        <h2>存款记录</h2>
+      </div>
+      <div class="savings-layout">
+        <div class="savings-input-area">
+          <h3>新增记录</h3>
+          <div class="savings-form">
+            <select id="savingsType" class="savings-select">
+              <option value="expense">支出</option>
+              <option value="income">收入</option>
+              <option value="auto-debit">自动扣款</option>
+            </select>
+            <select id="savingsAccount" class="savings-select">
+              <option value="cash">现金</option>
+              <option value="savings">储蓄</option>
+            </select>
+            <input type="number" id="savingsAmount" placeholder="金额" class="savings-input" step="0.01">
+            <input type="text" id="savingsDesc" placeholder="在哪里/做什么" class="savings-input">
+            <button onclick="addSavings()" class="btn-add">记录</button>
+          </div>
+        </div>
+        <div class="savings-summary">
+          <div class="balance-card cash">
+            <h4>现金</h4>
+            <p class="balance" id="cashBalance">CA$0.00</p>
+          </div>
+          <div class="balance-card savings">
+            <h4>储蓄</h4>
+            <p class="balance" id="savingsBalance">CA$0.00</p>
+          </div>
+          <div class="balance-card total">
+            <h4>总计</h4>
+            <p class="balance" id="totalBalance">CA$0.00</p>
+          </div>
+        </div>
+      </div>
+      <div id="savingsList" class="savings-list"></div>
+    </section>
+
+    <!-- 6. 英语学习(工作) -->
+    <section id="english-work" class="module">
+      <div class="module-header">
+        <h2>英语学习（工作）</h2>
+        <button class="btn-refresh" onclick="refreshModule('english-work')">今日学习材料</button>
+      </div>
+      <div class="inspiration-meta">
+        <span class="last-update">最后更新：<span id="englishWorkLastUpdate">-</span></span>
+        <p class="hint">每日工作场景英语材料：small talk、入职、开会、学生交流、加拿大高校新闻。双语总结 + 词汇高亮 + paraphrase 练习区</p>
+      </div>
+      <div id="englishWorkContent" class="english-content">
+        <div class="loading-placeholder">点击「今日学习材料」获取学习内容</div>
+      </div>
+    </section>
+
+    <!-- 7. 英语学习(生活) -->
+    <section id="english-life" class="module">
+      <div class="module-header">
+        <h2>英语学习（生活）</h2>
+      </div>
+      <div class="english-life-layout">
+        <div class="el-tabs">
+          <button class="el-tab active" data-tab="speaking">口语练习</button>
+          <button class="el-tab" data-tab="writing">写作日记</button>
+          <button class="el-tab" data-tab="resources">资料收集</button>
+        </div>
+        <div class="el-content">
+          <!-- 口语 -->
+          <div id="speaking" class="el-panel active">
+            <p class="hint">每天记录发生的事和感想。可以录音（自动转文字），也可以直接打字。写完后我会给你一个提升版本。</p>
+            <div id="speakingRecorder"></div>
+            <textarea id="speakingInput" class="english-textarea" placeholder="今天发生了什么？有什么感想？用英文或中文写都行..."></textarea>
+            <button onclick="improveSpeaking()" class="btn-improve">帮我提升</button>
+            <div id="speakingResult" class="improve-result"></div>
+          </div>
+          <!-- 写作 -->
+          <div id="writing" class="el-panel">
+            <p class="hint">每日日记。我会帮你修改语法并给出建议，保留原文。</p>
+            <textarea id="writingInput" class="english-textarea" placeholder="Today I want to express..."></textarea>
+            <button onclick="improveWriting()" class="btn-improve">修改提升</button>
+            <div id="writingResult" class="improve-result"></div>
+          </div>
+          <!-- 资料收集 -->
+          <div id="resources" class="el-panel">
+            <p class="hint">上传文档，选择生成双语文章或保存资料。</p>
+            <div class="upload-area">
+              <input type="file" id="resourceFile" class="file-input">
+              <select id="resourceAction" class="savings-select">
+                <option value="bilingual">生成中英双语文章</option>
+                <option value="save">保存资料</option>
+              </select>
+              <button onclick="processResource()" class="btn-add">处理</button>
+            </div>
+            <div id="resourceResult" class="resource-result"></div>
+            <div id="savedResources" class="saved-resources"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. 梦境记录 -->
+    <section id="dream" class="module">
+      <div class="module-header">
+        <h2>梦境记录</h2>
+      </div>
+      <div class="dream-input-area">
+        <p class="hint">填写梦境要素，我会帮你写成优美的中英双语文章。</p>
+        <div class="dream-form">
+          <div class="dream-field">
+            <label>地点</label>
+            <input type="text" id="dreamPlace" placeholder="如：海边、学校、森林..." class="dream-input">
+          </div>
+          <div class="dream-field">
+            <label>人物</label>
+            <input type="text" id="dreamPeople" placeholder="如：家人、陌生人、动物..." class="dream-input">
+          </div>
+          <div class="dream-field">
+            <label>情绪</label>
+            <input type="text" id="dreamMood" placeholder="如：快乐、恐惧、迷茫..." class="dream-input">
+          </div>
+          <div class="dream-field">
+            <label>关键画面</label>
+            <input type="text" id="dreamScene" placeholder="印象最深的画面..." class="dream-input">
+          </div>
+          <div class="dream-field full">
+            <label>补充描述</label>
+            <textarea id="dreamDesc" class="english-textarea" placeholder="其他想记录的细节..."></textarea>
+          </div>
+        </div>
+        <button onclick="generateDream()" class="btn-improve">生成梦境文章</button>
+      </div>
+      <div id="dreamResult" class="dream-result"></div>
+      <div id="dreamInterpretation" class="dream-interpretation" style="display:none;">
+        <h3 class="topic-title">🔮 解梦分析</h3>
+        <div id="dreamInterpretationContent" class="interpretation-content"></div>
+      </div>
+      <div id="dreamHistory" class="dream-history"></div>
+    </section>
+
+    <!-- 9. 随机灵感 -->
+    <section id="random-inspiration" class="module">
+      <div class="module-header">
+        <h2>随机灵感记录</h2>
+      </div>
+      <p class="hint">随手记录灵感，可以录音也可以打字。我会给你一些灵感拓展建议。</p>
+      <div class="random-input-area">
+        <div id="inspirationRecorder"></div>
+        <textarea id="randomInput" class="english-textarea" placeholder="突然想到的..."></textarea>
+        <div class="random-actions">
+          <button onclick="saveInspiration()" class="btn-add">保存</button>
+          <button onclick="expandInspiration()" class="btn-improve">给我灵感拓展</button>
+        </div>
+      </div>
+      <div id="randomResult" class="improve-result"></div>
+      <div id="inspirationList" class="inspiration-list"></div>
+    </section>
+
+    <!-- 10. 减肥记录 -->
+    <section id="diet" class="module">
+      <div class="module-header">
+        <h2>减肥记录</h2>
+      </div>
+      <div class="diet-layout">
+        <!-- 目标设置 -->
+        <div class="diet-goal-card">
+          <h3>体重目标</h3>
+          <div class="goal-form">
+            <div class="goal-field">
+              <label>当前体重 (kg)</label>
+              <input type="number" id="dietCurrentWeight" class="dream-input" step="0.1" placeholder="如 65.5">
+            </div>
+            <div class="goal-field">
+              <label>目标体重 (kg)</label>
+              <input type="number" id="dietTargetWeight" class="dream-input" step="0.1" placeholder="如 58.0">
+            </div>
+            <button onclick="saveDietGoal()" class="btn-add">设置目标</button>
+          </div>
+          <div id="dietGoalDisplay" class="goal-display"></div>
+        </div>
+
+        <!-- 体重记录曲线 -->
+        <div class="diet-weight-card">
+          <h3>体重趋势</h3>
+          <div id="weightTrackList" class="weight-track-list"></div>
+        </div>
+      </div>
+
+      <!-- 今日饮食 -->
+      <div class="diet-food-section">
+        <h3>今日饮食记录</h3>
+        <div class="diet-input-row">
+          <select id="dietMealType" class="savings-select">
+            <option value="breakfast">早餐</option>
+            <option value="lunch">午餐</option>
+            <option value="dinner">晚餐</option>
+            <option value="snack">零食/加餐</option>
+          </select>
+          <input type="text" id="dietFoodInput" placeholder="吃了什么（如：一碗牛肉面、一杯拿铁）" class="todo-input">
+          <button onclick="addDietLog()" class="btn-add">记录</button>
+        </div>
+        <div id="dietLogList" class="diet-log-list"></div>
+      </div>
+
+      <!-- 食材 + 食谱推荐 -->
+      <div class="diet-recipe-section">
+        <h3>今日食谱推荐</h3>
+        <p class="hint">告诉我你今天有什么食材，我来推荐食谱（偏中餐，不要美式咖啡，加奶的可以）</p>
+        <div class="ingredient-input-area">
+          <input type="text" id="ingredientInput" placeholder="输入食材（如：鸡胸肉、西兰花、鸡蛋、米饭）" class="todo-input">
+          <button onclick="addIngredient()" class="btn-add">添加食材</button>
+        </div>
+        <div id="ingredientList" class="ingredient-list"></div>
+        <button onclick="generateRecipe()" class="btn-improve" style="margin-top:12px;">生成今日食谱</button>
+        <div id="recipeResult" class="recipe-result"></div>
+      </div>
+    </section>
+
+    <!-- 11. 意大利语学习 -->
+    <section id="italian" class="module">
+      <div class="module-header">
+        <h2>意大利语学习</h2>
+        <button class="btn-refresh" onclick="refreshModule('italian')">今日课程</button>
+      </div>
+      <div class="inspiration-meta">
+        <span class="last-update">最后更新：<span id="italianLastUpdate">-</span></span>
+        <p class="hint">每日语法 + 单词 + 主题内容，从简到难。基于最新口语教材，用今天学的单词造日常句子。</p>
+      </div>
+
+      <!-- 难度选择 -->
+      <div class="italian-level-area">
+        <label class="hint">选择当前水平：</label>
+        <div class="level-buttons">
+          <button class="level-btn active" data-level="beginner" onclick="setItalianLevel('beginner')">初级 A1</button>
+          <button class="level-btn" data-level="elementary" onclick="setItalianLevel('elementary')">初级 A2</button>
+          <button class="level-btn" data-level="intermediate" onclick="setItalianLevel('intermediate')">中级 B1</button>
+        </div>
+      </div>
+
+      <!-- 学习进度 -->
+      <div id="italianProgress" class="italian-progress"></div>
+
+      <!-- 今日内容 -->
+      <div id="italianContent" class="italian-content">
+        <div class="loading-placeholder">点击「今日课程」开始学习</div>
+      </div>
+    </section>
+
+    <!-- 12. 读书笔记 -->
+    <section id="reading" class="module">
+      <div class="module-header">
+        <h2>读书笔记</h2>
+        <button class="btn-refresh" onclick="toggleAddBook()">+ 添加书籍</button>
+      </div>
+      <p class="hint">记录你读过的每一本书：摘录好段落（支持中英文语音录入）、积累生词、生成单词表和例句。AI 可以帮你生成总结和感想。</p>
+
+      <!-- 添加书籍表单 -->
+      <div id="addBookForm" class="add-book-form" style="display:none;">
+        <div style="display:flex;gap:16px;align-items:start;" class="full-width">
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+            <input type="text" id="bookTitle" placeholder="书名 *">
+            <input type="text" id="bookAuthor" placeholder="作者">
+            <input type="text" id="bookRating" placeholder="评分 (1-5)" type="number" min="1" max="5" step="0.5">
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div id="bookCoverPreview" style="width:80px;height:110px;border:2px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:24px;cursor:pointer;overflow:hidden;" onclick="$('bookCoverInput').click()" title="点击上传封面">
+              📷
+            </div>
+            <span style="font-size:10px;color:var(--text-muted);">点击上传封面</span>
+            <input type="file" id="bookCoverInput" accept="image/*" style="display:none;" onchange="handleBookCover(this)">
+          </div>
+        </div>
+        <textarea id="bookSummary" placeholder="图书总结（留空可 AI 生成）" class="full-width"></textarea>
+        <textarea id="bookThoughts" placeholder="读书感想（留空可 AI 生成）" class="full-width"></textarea>
+        <div class="full-width" style="display:flex;gap:8px;">
+          <button onclick="saveBook()" class="btn-add" style="flex:1;">保存书籍</button>
+          <button onclick="toggleAddBook()" class="btn-sm">取消</button>
+        </div>
+      </div>
+
+      <!-- 书籍列表 -->
+      <div id="booksList" class="books-list"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+// ============================================
+// 录音组件 - iOS Safari 兼容（本地版，无 API 上传）
+// ============================================
+
+class VoiceRecorder {
+  constructor() {
+    this.stream = null;
+    this.recorder = null;
+    this.chunks = [];
+    this.startTime = 0;
+    this.mime = '';
+  }
+
+  // 检测支持的音频格式
+  static getSupportedMime() {
+    const types = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/ogg;codecs=opus',
+    ];
+    for (const type of types) {
+      if (MediaRecorder.isTypeSupported(type)) return type;
+    }
+    return ''; // 让浏览器自己选
+  }
+
+  // 开始录音
+  async start() {
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      });
+      this.mime = VoiceRecorder.getSupportedMime();
+      const options = this.mime ? { mimeType: this.mime } : {};
+      this.recorder = new MediaRecorder(this.stream, options);
+      this.chunks = [];
+      this.recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this.chunks.push(e.data);
+      };
+      this.recorder.start();
+      this.startTime = Date.now();
+      return true;
+    } catch (err) {
+      console.error('[Recorder] start failed:', err);
+      throw err;
+    }
+  }
+
+  // 停止录音（本地版：不上传，不转写，仅返回时长）
+  async stop(module = 'general') {
+    return new Promise((resolve, reject) => {
+      this.recorder.onstop = async () => {
+        try {
+          const blob = new Blob(this.chunks, { type: this.mime || 'audio/webm' });
+          const durationMs = Date.now() - this.startTime;
+
+          // 停止麦克风
+          this.stream.getTracks().forEach((t) => t.stop());
+
+          // 本地版：不调用 API，返回空 transcript 提示用户手动转写
+          resolve({
+            id: Date.now(),
+            transcript: '',
+            durationMs,
+            error: '本地模式暂不支持自动转写，请手动输入文本',
+          });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      this.recorder.stop();
+    });
+  }
+
+  // 取消录音（不上传）
+  cancel() {
+    if (this.recorder && this.recorder.state !== 'inactive') {
+      this.recorder.stop();
+    }
+    if (this.stream) {
+      this.stream.getTracks().forEach((t) => t.stop());
+    }
+    this.chunks = [];
+  }
+
+  // 录音时长（秒）
+  getDuration() {
+    return Math.floor((Date.now() - this.startTime) / 1000);
+  }
+}
+
+// ============================================
+// 录音 UI 组件
+// ============================================
+
+function createRecorderUI(containerId, module, onTranscript) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const recorder = new VoiceRecorder();
+  let isRecording = false;
+  let timerInterval = null;
+
+  container.innerHTML = `
+    <div class="recorder-area">
+      <button class="btn-record" id="${containerId}-btn">🎤</button>
+      <span class="recorder-status" id="${containerId}-status">点击录音</span>
+    </div>
+  `;
+
+  const btn = document.getElementById(`${containerId}-btn`);
+  const status = document.getElementById(`${containerId}-status`);
+
+  btn.addEventListener('click', async () => {
+    if (!isRecording) {
+      // 开始录音
+      try {
+        await recorder.start();
+        isRecording = true;
+        btn.classList.add('recording');
+        btn.textContent = '⏹';
+        status.textContent = '正在录音... 0s';
+        status.classList.add('recording');
+
+        // 计时器
+        timerInterval = setInterval(() => {
+          const sec = recorder.getDuration();
+          status.textContent = `正在录音... ${sec}s`;
+        }, 1000);
+      } catch (err) {
+        alert('无法访问麦克风：' + err.message);
+      }
+    } else {
+      // 停止录音
+      btn.disabled = true;
+      status.textContent = '正在转写...';
+      status.classList.remove('recording');
+
+      clearInterval(timerInterval);
+
+      try {
+        const result = await recorder.stop(module);
+        btn.classList.remove('recording');
+        btn.textContent = '🎤';
+        status.textContent = `录音完成 (${Math.floor(result.durationMs / 1000)}s)`;
+        isRecording = false;
+
+        if (result.transcript) {
+          onTranscript(result.transcript);
+        } else if (result.error) {
+          status.textContent = result.error;
+        }
+      } catch (err) {
+        btn.classList.remove('recording');
+        btn.textContent = '🎤';
+        status.textContent = '录音失败：' + err.message;
+        isRecording = false;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  });
+}
+
+// ============================================
+// AI 智能输入浮窗 - 右下角机器人图标
+// 用户输入自然语言，本地关键词识别并分类到对应模块
+// ============================================
+
+const SmartInput = {
+  initialized: false,
+
+  init() {
+    if (this.initialized) return;
+    this.initialized = true;
+
+    // 创建浮窗 DOM
+    const fab = document.createElement('div');
+    fab.id = 'smartFab';
+    fab.innerHTML = `
+      <button class="fab-btn" id="smartFabBtn" title="智能输入">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="4" y="6" width="20" height="16" rx="4" fill="white"/>
+          <circle cx="10" cy="13" r="2" fill="#0071e3"/>
+          <circle cx="18" cy="13" r="2" fill="#0071e3"/>
+          <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#8e8e93"/>
+          <rect x="12" y="3" width="4" height="4" rx="2" fill="white"/>
+          <circle cx="14" cy="5" r="1" fill="#34c759"/>
+          <rect x="2" y="12" width="2" height="4" rx="1" fill="white"/>
+          <rect x="24" y="12" width="2" height="4" rx="1" fill="white"/>
+        </svg>
+      </button>
+    `;
+    document.body.appendChild(fab);
+
+    // 创建面板
+    const panel = document.createElement('div');
+    panel.id = 'smartPanel';
+    panel.className = 'smart-panel';
+    panel.innerHTML = `
+      <div class="smart-panel-header">
+        <div class="smart-bot-avatar">
+          <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="6" width="20" height="16" rx="4" fill="white"/>
+            <circle cx="10" cy="13" r="2" fill="#0071e3"/>
+            <circle cx="18" cy="13" r="2" fill="#0071e3"/>
+            <rect x="11" y="17" width="6" height="1.5" rx="0.75" fill="#8e8e93"/>
+          </svg>
+        </div>
+        <span class="smart-panel-title">智能助手</span>
+        <button class="smart-panel-close" id="smartPanelClose">✕</button>
+      </div>
+      <div class="smart-panel-body">
+        <p class="smart-hint">用中英文描述事件，我会自动帮你加入对应模块。</p>
+        <div class="smart-examples">
+          <span class="smart-example" data-text="我今天梦见我的小猫了">🌙 梦见小猫</span>
+          <span class="smart-example" data-text="我今天花了100刀买菜">💰 花了100刀</span>
+          <span class="smart-example" data-text="明天下午3点要开会汇报给Sarah">📋 明天开会</span>
+          <span class="smart-example" data-text="今天吃了牛肉面和拿铁">🥗 吃了什么</span>
+        </div>
+        <textarea id="smartInput" class="smart-textarea" placeholder="比如：我今天梦见小猫了 / 花了50刀 / 明天要交报告..."></textarea>
+        <button id="smartSubmit" class="smart-submit-btn">
+          <span class="smart-submit-text">识别并添加</span>
+          <span class="smart-loading" style="display:none;">思考中...</span>
+        </button>
+        <div id="smartResult" class="smart-result"></div>
+      </div>
+    `;
+    document.body.appendChild(panel);
+
+    // 绑定事件
+    $('smartFabBtn').addEventListener('click', () => this.toggle());
+    $('smartPanelClose').addEventListener('click', () => this.hide());
+    $('smartSubmit').addEventListener('click', () => this.submit());
+
+    // 示例点击
+    document.querySelectorAll('.smart-example').forEach(el => {
+      el.addEventListener('click', () => {
+        $('smartInput').value = el.dataset.text;
+        $('smartInput').focus();
+      });
+    });
+
+    // 回车提交（Ctrl+Enter 或 Cmd+Enter）
+    $('smartInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        this.submit();
+      }
+    });
+  },
+
+  toggle() {
+    const panel = $('smartPanel');
+    if (panel.classList.contains('show')) {
+      this.hide();
+    } else {
+      this.show();
+    }
+  },
+
+  show() {
+    $('smartPanel').classList.add('show');
+    $('smartFab').classList.add('active');
+    setTimeout(() => $('smartInput').focus(), 300);
+  },
+
+  hide() {
+    $('smartPanel').classList.remove('show');
+    $('smartFab').classList.remove('active');
+  },
+
+  // 本地关键词匹配，替代 API 调用
+  async submit() {
+    const input = $('smartInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const btn = $('smartSubmit');
+    const result = $('smartResult');
+    btn.disabled = true;
+    btn.querySelector('.smart-submit-text').style.display = 'none';
+    btn.querySelector('.smart-loading').style.display = 'inline';
+    result.innerHTML = '<div class="smart-thinking">🤔 正在分析...</div>';
+
+    try {
+      // 本地识别（模拟思考延迟）
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      const recognized = this.localRecognize(text);
+      if (recognized.module === 'unknown') {
+        result.innerHTML = `<div class="smart-error">😕 ${recognized.reason || '无法识别这个描述，试试换个说法？'}</div>`;
+      } else {
+        await this.applyToModule(recognized.module, recognized.data);
+        result.innerHTML = `
+          <div class="smart-success">
+            <div class="smart-success-icon">✅</div>
+            <div>
+              <strong>已添加到「${this.moduleLabel(recognized.module)}」</strong>
+              <p class="smart-success-reason">${recognized.reason || ''}</p>
+            </div>
+          </div>
+        `;
+        input.value = '';
+        showToast(`已添加到${this.moduleLabel(recognized.module)}`);
+      }
+    } catch (err) {
+      result.innerHTML = `<div class="smart-error">❌ ${err.message}</div>`;
+    } finally {
+      btn.disabled = false;
+      btn.querySelector('.smart-submit-text').style.display = 'inline';
+      btn.querySelector('.smart-loading').style.display = 'none';
+    }
+  },
+
+  // 本地关键词匹配识别
+  localRecognize(text) {
+    const lower = text.toLowerCase();
+
+    // dream 模块
+    if (/梦|梦见|dream/i.test(text)) {
+      return {
+        module: 'dream',
+        data: { place: '', people: '', mood: '', scene: '', desc: text },
+        reason: '识别到「梦」相关关键词，已记录到梦境。',
+      };
+    }
+    // savings 模块
+    if (/花|花了|买|消费|挣|收入|支出|扣|花销|\$|刀|元|块|RMB|CAD|USD/i.test(text)) {
+      const amountMatch = text.match(/(\d+(?:\.\d+)?)/);
+      const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
+      const isIncome = /挣|收入|入账/i.test(text);
+      return {
+        module: 'savings',
+        data: {
+          type: isIncome ? 'income' : 'expense',
+          account: 'savings',
+          amount,
+          description: text,
+        },
+        reason: `识别到金额相关描述${amount ? `（${amount}）` : ''}，已记录到存款。`,
+      };
+    }
+    // diet-food 模块
+    if (/吃|喝了|早餐|午餐|晚餐|宵夜|加餐|零食|餐/i.test(text)) {
+      return {
+        module: 'diet-food',
+        data: {
+          mealType: /早/i.test(text) ? 'breakfast'
+            : /午/i.test(text) ? 'lunch'
+            : /晚|宵/i.test(text) ? 'dinner'
+            : 'snack',
+          food: text,
+        },
+        reason: '识别到饮食相关描述，已记录到今日饮食。',
+      };
+    }
+    // diet-weight 模块
+    if (/kg|斤|磅|体重|称/i.test(text)) {
+      const weightMatch = text.match(/(\d+(?:\.\d+)?)/);
+      const weight = weightMatch ? parseFloat(weightMatch[1]) : 0;
+      return {
+        module: 'diet-weight',
+        data: { weight },
+        reason: `识别到体重相关数据${weight ? `（${weight}）` : ''}，已记录到体重趋势。`,
+      };
+    }
+    // inspiration 模块
+    if (/灵感|想法|点子|idea/i.test(text)) {
+      return {
+        module: 'inspiration',
+        data: { content: text },
+        reason: '识别到灵感相关关键词，已记录到随机灵感。',
+      };
+    }
+    // todo-work 模块
+    if (/开会|报告|deadline|截止|汇报|项目|任务|工作|老板|同事|客户/i.test(text)) {
+      // 尝试识别时间
+      let deadline = null;
+      const timeMatch = text.match(/(\d{4}-\d{1,2}-\d{1,2}[ T]\d{1,2}:\d{1,2})|明天|后天|今天|下周|本周/);
+      if (timeMatch && /明|后|下|今/.test(timeMatch[0])) {
+        const days = /后天/.test(timeMatch[0]) ? 2 : /明天|下/.test(timeMatch[0]) ? 1 : 0;
+        const d = new Date(Date.now() + days * 86400000);
+        deadline = d.toISOString().slice(0, 16);
+      }
+      // 尝试识别汇报对象
+      let reportTo = null;
+      const reportMatch = text.match(/汇报给\s*([^\s,，。.]+)/);
+      if (reportMatch) reportTo = reportMatch[1];
+      return {
+        module: 'todo-work',
+        data: { text, deadline, reportTo },
+        reason: '识别到工作场景关键词，已添加到工作待办。',
+      };
+    }
+    // reading 模块
+    if (/读书|看书|在读|阅读|书摘|摘录|书评|读完|开始读/i.test(text) || /book/i.test(text)) {
+      const titleMatch = text.match(/《([^》]+)》|"([^"]+)"/);
+      const title = titleMatch ? (titleMatch[1] || titleMatch[2]) : '';
+      return {
+        module: 'reading',
+        data: { title, text },
+        reason: title ? `识别到书籍《${title}》，已添加到读书笔记。` : '识别到阅读相关描述，已添加到读书笔记。',
+      };
+    }
+    // 默认 todo-life
+    return {
+      module: 'todo-life',
+      data: { text, deadline: null },
+      reason: '未匹配特定模块关键词，默认添加到生活待办。',
+    };
+  },
+
+  // 把识别结果应用到对应模块
+  async applyToModule(module, data) {
+    switch (module) {
+      case 'todo-life': {
+        const todos = loadData('todos_life', []);
+        todos.push({
+          id: Date.now(),
+          text: data.text || '',
+          deadline: data.deadline || null,
+          completed: false,
+          createdAt: new Date().toISOString()
+        });
+        saveData('todos_life', todos);
+        if ($('todo-life').classList.contains('active')) renderTodos('life');
+        break;
+      }
+      case 'todo-work': {
+        const todos = loadData('todos_work', []);
+        todos.push({
+          id: Date.now(),
+          text: data.text || '',
+          deadline: data.deadline || null,
+          reportTo: data.reportTo || null,
+          completed: false,
+          createdAt: new Date().toISOString()
+        });
+        saveData('todos_work', todos);
+        if ($('todo-work').classList.contains('active')) renderTodos('work');
+        break;
+      }
+      case 'savings': {
+        const savings = loadData('savings', []);
+        savings.push({
+          id: Date.now(),
+          type: data.type || 'expense',
+          account: data.account || 'savings',
+          amount: parseFloat(data.amount) || 0,
+          description: data.description || '',
+          date: now()
+        });
+        saveData('savings', savings);
+        renderSavings();
+        break;
+      }
+      case 'diet-food': {
+        const dietData = getDietData();
+        const todayLog = dietData.foodLogs.find(f => f.date === today());
+        const meal = { type: data.mealType || 'snack', food: data.food || '', time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) };
+        if (todayLog) todayLog.meals.push(meal);
+        else dietData.foodLogs.unshift({ date: today(), meals: [meal] });
+        saveDietData(dietData);
+        renderDietLogs();
+        break;
+      }
+      case 'diet-weight': {
+        const dietData = getDietData();
+        const weight = parseFloat(data.weight);
+        if (dietData.weights.length === 0 || dietData.weights[0].date !== today()) {
+          dietData.weights.unshift({ date: today(), weight });
+        } else {
+          dietData.weights[0].weight = weight;
+        }
+        if (!dietData.goal) dietData.goal = { current: weight, target: weight, setAt: new Date().toISOString() };
+        saveDietData(dietData);
+        renderDietGoal();
+        renderWeightTrack();
+        break;
+      }
+      case 'dream': {
+        const history = loadData('dream_history', []);
+        history.unshift({
+          id: Date.now(),
+          date: now(),
+          place: data.place || '',
+          people: data.people || '',
+          mood: data.mood || '',
+          scene: data.scene || '',
+          preview: `梦境：${data.place || ''} ${data.people || ''} ${data.mood || ''}`
+        });
+        if (history.length > 20) history.pop();
+        saveData('dream_history', history);
+        renderDreamHistory();
+        break;
+      }
+      case 'inspiration': {
+        const list = loadData('inspirations', []);
+        list.unshift({
+          id: Date.now(),
+          content: data.content || '',
+          date: now(),
+          expanded: null
+        });
+        saveData('inspirations', list);
+        renderInspirations();
+        break;
+      }
+      case 'reading': {
+        const books = getBooks();
+        books.unshift({
+          id: Date.now(),
+          title: data.title || data.text || '未命名书籍',
+          author: '',
+          rating: 0,
+          summary: '',
+          thoughts: '',
+          excerpts: [],
+          vocabulary: [],
+          createdAt: new Date().toISOString()
+        });
+        saveBooks(books);
+        renderBooks();
+        break;
+      }
+    }
+  },
+
+  moduleLabel(module) {
+    const labels = {
+      'todo-life': '生活待办',
+      'todo-work': '工作待办',
+      'savings': '存款记录',
+      'diet-food': '饮食记录',
+      'diet-weight': '体重记录',
+      'dream': '梦境记录',
+      'inspiration': '随机灵感',
+      'reading': '读书笔记',
+    };
+    return labels[module] || module;
+  },
+};
+
+// ============================================
+// 读书笔记模块
+// ============================================
+function getBooks() { return loadData('books', []); }
+function saveBooks(books) { saveData('books', books); }
+
+function toggleAddBook() {
+  const form = $('addBookForm');
+  const isVisible = form.style.display !== 'none';
+  form.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) {
+    $('bookTitle').focus();
+  }
+}
+
+function saveBook() {
+  const title = $('bookTitle').value.trim();
+  if (!title) { showToast('请输入书名'); return; }
+  const author = $('bookAuthor').value.trim();
+  const rating = parseFloat($('bookRating').value) || 0;
+  const summary = $('bookSummary').value.trim();
+  const thoughts = $('bookThoughts').value.trim();
+  const coverData = $('bookCoverInput').dataset.coverData || '';
+
+  const books = getBooks();
+  books.unshift({
+    id: Date.now(),
+    title, author, rating: Math.min(5, Math.max(0, rating)),
+    summary, thoughts,
+    cover: coverData,
+    excerpts: [],
+    vocabulary: [],
+    createdAt: new Date().toISOString()
+  });
+  saveBooks(books);
+
+  // 清空表单
+  ['bookTitle','bookAuthor','bookRating','bookSummary','bookThoughts'].forEach(id => $(id).value = '');
+  $('bookCoverPreview').innerHTML = '';
+  $('bookCoverInput').dataset.coverData = '';
+  $('addBookForm').style.display = 'none';
+  renderBooks();
+  showToast(`《${title}》已添加 ✓`);
+}
+
+function handleBookCover(input) {
+  const file = input.files[0];
+  if (!file) return;
+  // 限制大小 500KB
+  if (file.size > 500 * 1024) {
+    showToast('图片太大，请选择小于 500KB 的图片');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64 = e.target.result;
+    // 如果图片太大，压缩一下
+    if (base64.length > 400000) {
+      compressCoverImage(base64, (compressed) => {
+        input.dataset.coverData = compressed;
+        $('bookCoverPreview').innerHTML = `<img src="${compressed}" style="width:80px;height:110px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">`;
+        showToast('封面已加载 ✓');
+      });
+    } else {
+      input.dataset.coverData = base64;
+      $('bookCoverPreview').innerHTML = `<img src="${base64}" style="width:80px;height:110px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">`;
+      showToast('封面已加载 ✓');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function compressCoverImage(base64, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const maxW = 300;
+    const scale = Math.min(1, maxW / img.width);
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    callback(canvas.toDataURL('image/jpeg', 0.7));
+  };
+  img.src = base64;
+}
+
+function updateBookCover(bookId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = () => {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) {
+      showToast('图片太大，请选择小于 500KB 的图片');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result;
+      const save = (data) => {
+        const books = getBooks();
+        const book = books.find(b => b.id === bookId);
+        if (book) { book.cover = data; saveBooks(books); renderBooks(); showToast('封面已更新 ✓'); }
+      };
+      if (base64.length > 400000) {
+        compressCoverImage(base64, save);
+      } else {
+        save(base64);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function deleteBook(id) {
+  if (!confirm('确定删除这本书及其所有笔记吗？')) return;
+  let books = getBooks();
+  books = books.filter(b => b.id !== id);
+  saveBooks(books);
+  renderBooks();
+}
+
+function setBookRating(id, rating) {
+  const books = getBooks();
+  const book = books.find(b => b.id === id);
+  if (book) { book.rating = rating; saveBooks(books); renderBooks(); }
+}
+
+function addExcerpt(bookId) {
+  const textarea = document.getElementById(`excerpt-input-${bookId}`);
+  if (!textarea) return;
+  const text = textarea.value.trim();
+  if (!text) { showToast('请输入摘录内容'); return; }
+  // 检测语言
+  const isEnglish = /^[a-zA-Z\s\d\.,!?;:'"()\-]+/.test(text);
+  const lang = isEnglish ? 'EN' : 'CN';
+
+  const books = getBooks();
+  const book = books.find(b => b.id === bookId);
+  if (book) {
+    if (!book.excerpts) book.excerpts = [];
+    book.excerpts.push({ id: Date.now(), text, lang, date: now() });
+    saveBooks(books);
+  }
+  textarea.value = '';
+  renderBooks();
+  showToast('摘录已保存 ✓');
+}
+
+function deleteExcerpt(bookId, excerptId) {
+  const books = getBooks();
+  const book = books.find(b => b.id === bookId);
+  if (book && book.excerpts) {
+    book.excerpts = book.excerpts.filter(e => e.id !== excerptId);
+    saveBooks(books);
+    renderBooks();
+  }
+}
+
+function addVocab(bookId) {
+  const wordInput = document.getElementById(`vocab-word-${bookId}`);
+  const meaningInput = document.getElementById(`vocab-meaning-${bookId}`);
+  if (!wordInput || !meaningInput) return;
+  const word = wordInput.value.trim();
+  const meaning = meaningInput.value.trim();
+  if (!word) { showToast('请输入单词'); return; }
+
+  const books = getBooks();
+  const book = books.find(b => b.id === bookId);
+  if (book) {
+    if (!book.vocabulary) book.vocabulary = [];
+    // 检查重复
+    if (book.vocabulary.some(v => v.word.toLowerCase() === word.toLowerCase())) {
+      showToast('该单词已存在');
+      return;
+    }
+    book.vocabulary.push({
+      id: Date.now(),
+      word,
+      meaning: meaning || '(待补充)',
+      sentence: '',
+      date: now()
+    });
+    saveBooks(books);
+  }
+  wordInput.value = '';
+  meaningInput.value = '';
+  renderBooks();
+  showToast('单词已添加 ✓');
+}
+
+function deleteVocab(bookId, vocabId) {
+  const books = getBooks();
+  const book = books.find(b => b.id === bookId);
+  if (book && book.vocabulary) {
+    book.vocabulary = book.vocabulary.filter(v => v.id !== vocabId);
+    saveBooks(books);
+    renderBooks();
+  }
+}
+
+function generateVocabSentences(bookId) {
+  const books = getBooks();
+  const book = books.find(b => b.id === bookId);
+  if (!book || !book.vocabulary || book.vocabulary.length === 0) {
+    showToast('还没有添加单词，请先添加生词');
+    return;
+  }
+
+  // 为每个没有例句的单词生成例句
+  book.vocabulary.forEach(v => {
+    if (!v.sentence) {
+      v.sentence = generateSentenceForWord(v.word, v.meaning);
+    }
+  });
+  saveBooks(books);
+  renderBooks();
+  showToast('单词表和例句已生成 ✓');
+}
+
+function generateSentenceForWord(word, meaning) {
+  // 根据单词和释义智能生成例句
+  const isEnglish = /^[a-zA-Z]+$/.test(word);
+  const sentences = {
+    // 常见单词的预设例句
+    'profound': 'Her speech had a profound impact on everyone in the audience.',
+    'eloquent': 'The lawyer delivered an eloquent argument that moved the jury.',
+    'resilient': 'Children are often more resilient than adults expect.',
+    'nostalgia': 'Listening to old songs filled her with a sense of nostalgia.',
+    'serendipity': 'Finding that book in a second-hand shop was pure serendipity.',
+    'ephemeral': 'The beauty of cherry blossoms is ephemeral but unforgettable.',
+    'melancholy': 'A gentle melancholy settled over him as the sun went down.',
+    'luminous': 'Her luminous smile lit up the entire room.',
+    'tenacious': 'He was tenacious in his pursuit of the truth.',
+    'whimsical': 'The garden had a whimsical charm with its crooked paths.',
+    'inevitable': 'Change is the one inevitable thing in life.',
+    'subtle': 'There was a subtle difference between the two paintings.',
+    'vivid': 'She still had vivid memories of her childhood home.',
+    'contemplate': 'He sat by the lake to contemplate the meaning of life.',
+    'solitude': 'She cherished the solitude of early mornings.',
+    'resonate': 'His words resonated deeply with the young audience.',
+    'catalyst': 'The crisis became a catalyst for real change.',
+    'paradox': 'It is a paradox that the more we have, the less we appreciate.',
+    'nuance': 'Every nuance of her performance was carefully crafted.',
+    'eloquence': 'His eloquence made even the simplest ideas sound beautiful.',
+    'benevolent': 'The benevolent old woman helped everyone in the village.',
+    'enigmatic': 'The Mona Lisa\'s enigmatic smile has puzzled viewers for centuries.',
+    'ephemeral': 'Social media fame is often ephemeral.',
+    'fortitude': 'She faced her illness with remarkable fortitude.',
+    'gregarious': 'His gregarious nature made him the life of every party.',
+    'harbinger': 'The first robin is a harbinger of spring.',
+    'idyllic': 'They spent an idyllic summer in the countryside.',
+    'juxtapose': 'The artist likes to juxtapose light and dark in her work.',
+    'labyrinth': 'The old city was a labyrinth of narrow streets.',
+    'magnanimous': 'The magnanimous leader forgave his former enemies.',
+  };
+
+  if (isEnglish && sentences[word.toLowerCase()]) {
+    return sentences[word.toLowerCase()];
+  }
+  if (isEnglish) {
+    // 自动生成：使用单词造一个简单句
+    const cleanWord = word.replace(/[^a-zA-Z]/g, '');
+    const meaningHint = meaning ? `, which means "${meaning}"` : '';
+    return `"${cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1)}" is a word I learned${meaningHint} — it helps me express myself more precisely.`;
+  }
+  // 中文词
+  return `"${word}"这个词让我印象深刻${meaning ? `，它的意思是「${meaning}」` : ''}。`;
+}
+
+function generateBookSummary(bookId) {
+  const books = getBooks();
+  const book = books.find(b => b.id === bookId);
+  if (!book) return;
+
+  const excerpts = book.excerpts || [];
+  const excerptTexts = excerpts.map(e => e.text).join(' ');
+
+  // 基于书名和摘录内容生成总结
+  if (!book.summary || book.summary === '') {
+    book.summary = generateSummaryFromTitle(book.title, book.author, excerptTexts);
+  }
+  if (!book.thoughts || book.thoughts === '') {
+    book.thoughts = generateThoughtsFromTitle(book.title, book.author, excerptTexts);
+  }
+  saveBooks(books);
+  renderBooks();
+  showToast('AI 已生成总结和感想 ✓');
+}
+
+function generateSummaryFromTitle(title, author, excerpts) {
+  const patterns = [
+    `《${title}》是一本发人深省的作品${author ? '，作者' + author + '以其独特的视角和深刻的洞察力' : ''}，探讨了人性、社会与自我认知的永恒主题。书中通过细腻的笔触和丰富的叙事层次，带领读者进入一个既熟悉又陌生的世界。`,
+    `《${title}》${author ? '是' + author + '的代表作，' : ''}融合了深刻的哲学思考与引人入胜的叙事。书中探讨的核心问题——关于爱、失去与救赎——至今仍引发读者的强烈共鸣。`,
+    `《${title}》${author ? '由' + author + '创作，' : ''}是一本不可多得的佳作。它以简洁有力的语言，揭示了日常生活中的非凡意义，让读者在阅读过程中不断反思自己的生活和选择。`,
+  ];
+  // 基于书名哈希选择模板，保证同一本书一致
+  const idx = title.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % patterns.length;
+  return patterns[idx];
+}
+
+function generateThoughtsFromTitle(title, author, excerpts) {
+  const patterns = [
+    `读《${title}》的过程像是一场心灵的对话。书中最打动我的是那种直面人生困境的勇气——不是逃避，而是在认清真相后依然热爱生活。这让我重新审视自己的选择与坚持。`,
+    `《${title}》让我意识到，真正的成长往往发生在最不经意的时刻。作者的叙述方式既不煽情也不说教，却让人在合上书后久久不能平静。`,
+    `每次翻开《${title}》都有新的发现。这本书最大的魅力在于它的多层次性——不同年龄段、不同心境下阅读，都会有不同的感悟。它已经成为我书架上的常驻之书。`,
+  ];
+  const idx = (title + (author || '')).split('').reduce((a, c) => a + c.charCodeAt(0), 0) % patterns.length;
+  return patterns[idx];
+}
+
+function renderBooks() {
+  const container = $('booksList');
+  const books = getBooks();
+
+  if (books.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
+        <div style="font-size:40px;margin-bottom:12px;">📚</div>
+        <p>还没有添加书籍，点击右上角「+ 添加书籍」开始记录吧</p>
+        <p style="font-size:12px;margin-top:4px;">支持摘录好段落、积累生词、AI 生成总结和单词例句</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = books.map(book => {
+    const stars = [1,2,3,4,5].map(n => {
+      const filled = book.rating >= n;
+      const half = !filled && book.rating >= n - 0.5;
+      return `<span class="star ${filled ? 'filled' : ''} ${half ? 'half' : ''}"
+        onclick="setBookRating(${book.id}, ${n})" title="${n}星">${filled ? '★' : half ? '⯨' : '☆'}</span>`;
+    }).join('');
+
+    const excerpts = book.excerpts || [];
+    const vocab = book.vocabulary || [];
+
+    return `
+    <div class="book-card" id="book-${book.id}">
+      <div class="book-card-header">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          ${book.cover ? `
+            <div style="position:relative;flex-shrink:0;cursor:pointer;" onclick="updateBookCover(${book.id})" title="点击更换封面">
+              <img src="${book.cover}" style="width:64px;height:90px;object-fit:cover;border-radius:6px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+              <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:#fff;font-size:9px;text-align:center;padding:2px 0;border-radius:0 0 6px 6px;opacity:0;transition:opacity 0.2s;" class="cover-hover-hint">更换</div>
+            </div>
+          ` : `
+            <div style="width:64px;height:90px;border:2px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:18px;flex-shrink:0;cursor:pointer;" onclick="updateBookCover(${book.id})" title="添加封面">
+              📷
+            </div>
+          `}
+          <div style="flex:1;">
+            <h3 style="margin:0 0 6px;">《${escapeHtml(book.title)}》</h3>
+            <div class="book-rating" style="margin-bottom:6px;">${stars}</div>
+            <div class="book-meta">
+              ${book.author ? `<span class="tag">✍ ${escapeHtml(book.author)}</span>` : ''}
+              ${book.rating ? `<span class="tag">⭐ ${book.rating}</span>` : ''}
+              <span class="tag">📅 ${new Date(book.createdAt).toLocaleDateString('zh-CN')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      ${book.summary ? `
+        <div class="book-summary">${escapeHtml(book.summary)}</div>
+      ` : ''}
+      ${book.thoughts ? `
+        <div class="book-thoughts">${escapeHtml(book.thoughts)}</div>
+      ` : ''}
+
+      <!-- 摘录 -->
+      <div class="book-excerpts">
+        <h4>📝 好段落摘录 (${excerpts.length})</h4>
+        ${excerpts.map(e => `
+          <div class="excerpt-item">
+            <div class="excerpt-lang">${e.lang === 'EN' ? '🇬🇧 English' : '🇨🇳 中文'}</div>
+            <span>${escapeHtml(e.text.length > 200 ? e.text.slice(0, 200) + '...' : e.text)}</span>
+            <span class="excerpt-delete" onclick="event.stopPropagation();deleteExcerpt(${book.id}, ${e.id})" title="删除">✕</span>
+          </div>
+        `).join('')}
+        <div class="excerpt-input-area">
+          <textarea id="excerpt-input-${book.id}" placeholder="粘贴或语音录入好段落（中英文均可）..." rows="2"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="addExcerpt(${book.id})" class="btn-sm">保存摘录</button>
+          <div id="excerptRecorder-${book.id}"></div>
+        </div>
+      </div>
+
+      <!-- 生词本 -->
+      <div class="book-vocab">
+        <h4>📕 生词本 (${vocab.length})</h4>
+        ${vocab.length > 0 ? `
+          <table class="vocab-table">
+            <thead><tr><th>单词</th><th>释义</th><th>例句</th><th></th></tr></thead>
+            <tbody>
+              ${vocab.map(v => `
+                <tr>
+                  <td>${escapeHtml(v.word)}</td>
+                  <td>${escapeHtml(v.meaning)}</td>
+                  <td>${v.sentence ? escapeHtml(v.sentence) : '<span style="color:var(--text-muted);font-style:italic;">点击下方生成</span>'}</td>
+                  <td><span class="vocab-delete" onclick="deleteVocab(${book.id}, ${v.id})">✕</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        ` : '<p style="font-size:12px;color:var(--text-muted);">还没有添加生词</p>'}
+        <div class="vocab-input-row">
+          <input type="text" id="vocab-word-${book.id}" placeholder="生词（中英文均可）">
+          <input type="text" id="vocab-meaning-${book.id}" placeholder="释义（可选）">
+          <button onclick="addVocab(${book.id})" class="btn-sm">添加</button>
+        </div>
+        ${vocab.length > 0 ? `
+          <button onclick="generateVocabSentences(${book.id})" class="btn-sm" style="margin-top:4px;">🪄 生成单词表 & 例句</button>
+        ` : ''}
+      </div>
+
+      <!-- 操作 -->
+      <div class="book-actions">
+        <button onclick="generateBookSummary(${book.id})" class="btn-sm">🤖 AI 生成总结</button>
+        <button onclick="deleteBook(${book.id})" class="btn-sm danger">删除本书</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 为每本书初始化录音组件
+  books.forEach(book => {
+    setTimeout(() => {
+      createRecorderUI(`excerptRecorder-${book.id}`, 'reading', (transcript) => {
+        const textarea = document.getElementById(`excerpt-input-${book.id}`);
+        if (textarea) {
+          textarea.value = (textarea.value ? textarea.value + '\n' : '') + transcript;
+          showToast('语音转写完成，已填入摘录框');
+        }
+      });
+    }, 100);
+  });
+}
+
+// ============================================
+// VPEA 工作台 - 核心逻辑（本地独立版）
+// ============================================
+
+// ========== 工具函数 ==========
+const $ = (id) => document.getElementById(id);
+const today = () => new Date().toISOString().split('T')[0];
+const now = () => new Date().toLocaleString('zh-CN', { timeZone: 'America/Vancouver' });
+
+// ========== 数据层（纯 localStorage） ==========
+function saveData(key, data) {
+  try {
+    localStorage.setItem('workbench_' + key, JSON.stringify(data));
+  } catch (e) {
+    console.error('[saveData] failed:', e);
+  }
+}
+function loadData(key, defaultVal = null) {
+  try {
+    const raw = localStorage.getItem('workbench_' + key);
+    if (raw === null) return defaultVal;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error('[loadData] failed:', e);
+    return defaultVal;
+  }
+}
+
+// Toast 通知
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ========== 待办清单 ==========
+function getTodos(type) {
+  return loadData(`todos_${type}`, []);
+}
+function saveTodos(type, todos) {
+  saveData(`todos_${type}`, todos);
+}
+
+function addTodo(type) {
+  const input = $(`todo${type === 'life' ? 'Life' : 'Work'}Input`);
+  const deadline = $(`todo${type === 'life' ? 'Life' : 'Work'}Deadline`);
+  const reportTo = type === 'work' ? $('todoWorkReportTo') : null;
+
+  if (!input.value.trim()) return;
+
+  const todos = getTodos(type);
+  todos.push({
+    id: Date.now(),
+    text: input.value.trim(),
+    deadline: deadline.value || null,
+    reportTo: reportTo ? reportTo.value.trim() : null,
+    completed: false,
+    createdAt: new Date().toISOString()
+  });
+  saveTodos(type, todos);
+
+  input.value = '';
+  deadline.value = '';
+  if (reportTo) reportTo.value = '';
+  renderTodos(type);
+}
+
+function toggleTodo(type, id) {
+  const todos = getTodos(type);
+  const t = todos.find(t => t.id === id);
+  if (t) {
+    t.completed = !t.completed;
+    if (t.completed) t.completedAt = new Date().toISOString();
+    saveTodos(type, todos);
+    renderTodos(type);
+  }
+}
+
+function deleteTodo(type, id) {
+  let todos = getTodos(type);
+  todos = todos.filter(t => t.id !== id);
+  saveTodos(type, todos);
+  renderTodos(type);
+}
+
+function renderTodos(type) {
+  const list = $(`todo${type === 'life' ? 'Life' : 'Work'}List`);
+  const todos = getTodos(type);
+  if (todos.length === 0) {
+    list.innerHTML = '<li style="color:var(--text-muted);padding:20px;text-align:center;">暂无待办事项</li>';
+    return;
+  }
+  list.innerHTML = todos.map(t => {
+    let deadlineHtml = '';
+    if (t.deadline) {
+      const dl = new Date(t.deadline);
+      const isOverdue = !t.completed && dl < new Date();
+      deadlineHtml = `<span class="todo-deadline ${isOverdue ? 'overdue' : ''}">截止：${dl.toLocaleString('zh-CN')}</span>`;
+    }
+    let reportHtml = '';
+    if (t.reportTo) {
+      reportHtml = `<span class="todo-report">汇报给：${escapeHtml(t.reportTo)}</span>`;
+    }
+    return `
+      <li class="todo-item ${t.completed ? 'completed' : ''}">
+        <input type="checkbox" class="todo-checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo('${type}', ${t.id})">
+        <div class="todo-content">
+          <div class="todo-text">${escapeHtml(t.text)}</div>
+          <div class="todo-meta">${deadlineHtml}${reportHtml}</div>
+        </div>
+        <button class="todo-delete" onclick="deleteTodo('${type}', ${t.id})">✕</button>
+      </li>
+    `;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ========== 语音朗读（OpenAI TTS 优先 + Web Speech 兜底） ==========
+let _currentAudio = null;
+let _openaiKey = localStorage.getItem('wb_openai_key') || '';
+
+function setOpenAIKey() {
+  const key = prompt('请输入 OpenAI API Key（在 platform.openai.com/api-keys 创建）：\n\n留空则使用浏览器自带语音。\n\nKey 只存在你的浏览器本地，不会上传到任何地方。', _openaiKey);
+  if (key !== null) {
+    _openaiKey = key.trim();
+    localStorage.setItem('wb_openai_key', _openaiKey);
+    showToast(_openaiKey ? '已保存，将使用 OpenAI 自然语音' : '已清除，将使用浏览器自带语音');
+  }
+}
+
+function stopAudio() {
+  if (_currentAudio) {
+    _currentAudio.pause();
+    _currentAudio = null;
+  }
+  if (_currentUtterance) {
+    speechSynthesis.cancel();
+    _currentUtterance = null;
+  }
+}
+
+async function speak(text, btn) {
+  if (_currentAudio || _currentUtterance) {
+    stopAudio();
+    if (btn) btn.classList.remove('speaking');
+    return;
+  }
+  if (btn) btn.classList.add('speaking');
+
+  // 优先用 OpenAI TTS（如果有 key）
+  if (_openaiKey) {
+    try {
+      const resp = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + _openaiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'tts-1', voice: 'nova', input: text, speed: 1.0 }),
+      });
+      if (resp.ok) {
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        _currentAudio = new Audio(url);
+        _currentAudio.onended = () => { _currentAudio = null; if (btn) btn.classList.remove('speaking'); URL.revokeObjectURL(url); };
+        _currentAudio.onerror = () => { _currentAudio = null; if (btn) btn.classList.remove('speaking'); };
+        _currentAudio.play();
+        return;
+      }
+    } catch(e) { /* 失败了降级到浏览器语音 */ }
+  }
+
+  // 兜底：浏览器自带语音
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; u.rate = 0.9; u.pitch = 1;
+  const voices = speechSynthesis.getVoices();
+  const enVoice = voices.find(v => v.lang.startsWith('en') && /female|samantha|victoria|karen|tessa/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
+  if (enVoice) u.voice = enVoice;
+  _currentUtterance = u;
+  u.onend = () => { _currentUtterance = null; if (btn) btn.classList.remove('speaking'); };
+  u.onerror = () => { _currentUtterance = null; if (btn) btn.classList.remove('speaking'); };
+  speechSynthesis.speak(u);
+}
+
+// 预加载
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
+
+// 意大利语发音
+async function speakIt(text, btn) {
+  if (_currentAudio || _currentUtterance) { stopAudio(); if (btn) btn.classList.remove('speaking'); return; }
+  if (btn) btn.classList.add('speaking');
+
+  if (_openaiKey) {
+    try {
+      const resp = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + _openaiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'tts-1', voice: 'nova', input: text, speed: 1.0 }),
+      });
+      if (resp.ok) {
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        _currentAudio = new Audio(url);
+        _currentAudio.onended = () => { _currentAudio = null; if (btn) btn.classList.remove('speaking'); URL.revokeObjectURL(url); };
+        _currentAudio.onerror = () => { _currentAudio = null; if (btn) btn.classList.remove('speaking'); };
+        _currentAudio.play();
+        return;
+      }
+    } catch(e) {}
+  }
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'it-IT'; u.rate = 0.85;
+  const voices = speechSynthesis.getVoices();
+  const itVoice = voices.find(v => v.lang.startsWith('it'));
+  if (itVoice) u.voice = itVoice;
+  _currentUtterance = u;
+  u.onend = () => { _currentUtterance = null; if (btn) btn.classList.remove('speaking'); };
+  u.onerror = () => { _currentUtterance = null; if (btn) btn.classList.remove('speaking'); };
+  speechSynthesis.speak(u);
+}
+
+// ========== 股票持仓 ==========
+function getStocks() { return loadData('stocks', []); }
+function saveStocks(stocks) { saveData('stocks', stocks); }
+
+function addStock() {
+  const symbol = $('stockSymbol').value.trim();
+  const shares = parseFloat($('stockShares').value);
+  const costPrice = parseFloat($('stockCostPrice').value);
+  const marketPrice = parseFloat($('stockMarketPrice').value) || costPrice;
+  const pnlNote = $('stockPnlNote').value.trim();
+
+  if (!symbol || !shares || !costPrice) {
+    showToast('请填写代码、股数和成本价');
+    return;
+  }
+
+  const stocks = getStocks();
+  stocks.push({
+    id: Date.now(),
+    symbol: symbol.toUpperCase(),
+    shares,
+    costPrice,
+    marketPrice,
+    pnlNote,
+    updatedAt: now()
+  });
+  saveStocks(stocks);
+
+  $('stockSymbol').value = '';
+  $('stockShares').value = '';
+  $('stockCostPrice').value = '';
+  $('stockMarketPrice').value = '';
+  $('stockPnlNote').value = '';
+  renderPortfolio();
+  showToast(`${symbol.toUpperCase()} 已添加 ✓`);
+}
+
+function batchAddStocks() {
+  const pnlNote = $('stockPnlNote').value.trim();
+  if (!pnlNote) { showToast('请填写盈亏备注'); return; }
+  const stocks = getStocks();
+  if (stocks.length === 0) { showToast('请先添加股票'); return; }
+  stocks[stocks.length - 1].pnlNote = pnlNote;
+  stocks[stocks.length - 1].updatedAt = now();
+  saveStocks(stocks);
+  $('stockPnlNote').value = '';
+  renderPortfolio();
+  showToast('盈亏备注已更新 ✓');
+}
+
+function updateStockField(id, field, value) {
+  const stocks = getStocks();
+  const stock = stocks.find(s => s.id === id);
+  if (!stock) return;
+  if (field === 'shares' || field === 'costPrice' || field === 'marketPrice') {
+    stock[field] = parseFloat(value) || 0;
+  } else {
+    stock[field] = value;
+  }
+  stock.updatedAt = now();
+  saveStocks(stocks);
+  renderPortfolio();
+}
+
+function deleteStock(id) {
+  let stocks = getStocks();
+  stocks = stocks.filter(s => s.id !== id);
+  saveStocks(stocks);
+  renderPortfolio();
+}
+
+function renderPortfolio() {
+  const list = $('portfolioList');
+  const summary = $('portfolioSummary');
+  const stocks = getStocks();
+  if (stocks.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-muted);padding:12px;">暂无持仓记录</div>';
+    summary.innerHTML = '<p style="color:var(--text-muted);">暂无持仓</p>';
+    return;
+  }
+
+  list.innerHTML = stocks.map(s => {
+    const costTotal = s.shares * s.costPrice;
+    const marketTotal = s.shares * s.marketPrice;
+    const diff = marketTotal - costTotal;
+    const diffColor = diff >= 0 ? 'var(--success)' : 'var(--danger)';
+    const diffSign = diff >= 0 ? '+' : '';
+
+    return `
+    <div class="portfolio-item">
+      <div class="portfolio-item-main">
+        <div class="portfolio-item-symbol">
+          <strong>${escapeHtml(s.symbol)}</strong>
+          <span style="font-size:11px;color:var(--text-muted);">${escapeHtml(s.updatedAt || '')}</span>
+        </div>
+        <div class="portfolio-item-info">
+          <span>${s.shares} 股</span>
+          <span class="sep">·</span>
+          <span>成本 <strong>$${s.costPrice.toFixed(2)}</strong></span>
+          <span class="sep">·</span>
+          <span>市场 <strong style="color:var(--accent);">$${s.marketPrice.toFixed(2)}</strong></span>
+          ${s.marketPrice !== s.costPrice ? `
+            <span class="sep">·</span>
+            <span style="color:${diffColor};font-weight:600;">${diffSign}$${Math.abs(diff).toFixed(2)}</span>
+          ` : ''}
+        </div>
+        ${s.pnlNote ? `
+          <div style="margin-top:4px;font-size:12px;color:var(--text-secondary);padding:4px 8px;background:var(--bg-input);border-radius:4px;">
+            📝 ${escapeHtml(s.pnlNote)}
+          </div>` : ''}
+      </div>
+      <div class="portfolio-item-actions">
+        <button class="btn-sm" onclick="editStockInline(${s.id})" title="编辑">✏️</button>
+        <button class="todo-delete" onclick="deleteStock(${s.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const totalCost = stocks.reduce((sum, s) => sum + s.shares * s.costPrice, 0);
+  const totalMarket = stocks.reduce((sum, s) => sum + s.shares * s.marketPrice, 0);
+  const totalDiff = totalMarket - totalCost;
+  const tc = totalDiff >= 0 ? 'var(--success)' : 'var(--danger)';
+  const ts = totalDiff >= 0 ? '+' : '';
+
+  summary.innerHTML = `
+    <div class="pnl-summary">
+      <div class="pnl-row"><span>总成本</span><strong>$${totalCost.toFixed(2)}</strong></div>
+      <div class="pnl-row"><span>总市值</span><strong>$${totalMarket.toFixed(2)}</strong></div>
+      <div class="pnl-row total">
+        <span>价差</span>
+        <strong style="color:${tc};font-size:18px;">${ts}$${Math.abs(totalDiff).toFixed(2)}</strong>
+      </div>
+    </div>`;
+}
+
+function editStockInline(id) {
+  const stocks = getStocks();
+  const stock = stocks.find(s => s.id === id);
+  if (!stock) return;
+
+  const newShares = prompt(`修改 ${stock.symbol} 股数：`, stock.shares);
+  if (newShares !== null) {
+    const s = parseFloat(newShares);
+    if (!isNaN(s) && s > 0) updateStockField(id, 'shares', s);
+  }
+  const newCost = prompt(`修改 ${stock.symbol} 成本价（当前 $${stock.costPrice.toFixed(2)}）：`, stock.costPrice.toFixed(2));
+  if (newCost !== null) {
+    const c = parseFloat(newCost);
+    if (!isNaN(c) && c > 0) updateStockField(id, 'costPrice', c);
+  }
+  const newMarket = prompt(`修改 ${stock.symbol} 市场价（当前 $${stock.marketPrice.toFixed(2)}）：`, stock.marketPrice.toFixed(2));
+  if (newMarket !== null) {
+    const m = parseFloat(newMarket);
+    if (!isNaN(m) && m > 0) updateStockField(id, 'marketPrice', m);
+  }
+  const newNote = prompt(`修改 ${stock.symbol} 盈亏备注：`, stock.pnlNote || '');
+  if (newNote !== null) {
+    updateStockField(id, 'pnlNote', newNote);
+  }
+}
+
+// ========== 存款记录 ==========
+function getSavings() { return loadData('savings', []); }
+function saveSavings(s) { saveData('savings', s); }
+
+function addSavings() {
+  const type = $('savingsType').value;
+  const account = $('savingsAccount').value;
+  const amountStr = $('savingsAmount').value.trim();
+  const amount = parseFloat(amountStr);
+  const desc = $('savingsDesc').value.trim();
+
+  if (!amountStr || isNaN(amount)) {
+    showToast('请输入有效金额');
+    return;
+  }
+  if (!desc) {
+    showToast('请输入描述信息');
+    return;
+  }
+
+  const savings = getSavings();
+  savings.push({
+    id: Date.now(),
+    type,
+    account,
+    amount,
+    description: desc,
+    date: new Date().toLocaleString('zh-CN', { timeZone: 'America/Vancouver' })
+  });
+  saveSavings(savings);
+
+  $('savingsAmount').value = '';
+  $('savingsDesc').value = '';
+  renderSavings();
+}
+
+function deleteSavings(id) {
+  let savings = getSavings();
+  savings = savings.filter(s => s.id !== id);
+  saveSavings(savings);
+  renderSavings();
+}
+
+function renderSavings() {
+  const list = $('savingsList');
+  const savings = getSavings();
+  let cash = 0, savingsBal = 0;
+
+  savings.forEach(s => {
+    const amt = s.type === 'income' ? s.amount : -s.amount;
+    if (s.account === 'cash') cash += amt;
+    else savingsBal += amt;
+  });
+
+  $('cashBalance').textContent = `CA$${cash.toFixed(2)}`;
+  $('savingsBalance').textContent = `CA$${savingsBal.toFixed(2)}`;
+  $('totalBalance').textContent = `CA$${(cash + savingsBal).toFixed(2)}`;
+
+  if (savings.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-muted);padding:12px;">暂无记录</div>';
+    return;
+  }
+
+  const typeLabel = { expense: '支出', income: '收入', 'auto-debit': '自动扣款' };
+  list.innerHTML = savings.slice().reverse().map(s => `
+    <div class="savings-item">
+      <span>${escapeHtml(s.date)}</span>
+      <span class="type-${s.type}">${typeLabel[s.type]}</span>
+      <span>${s.account === 'cash' ? '现金' : '储蓄'}</span>
+      <span>${escapeHtml(s.description)}</span>
+      <span class="type-${s.type}" style="font-weight:600;">${s.type === 'income' ? '+' : '-'}CA$${s.amount.toFixed(2)}</span>
+      <button class="todo-delete" onclick="deleteSavings(${s.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+// ========== 演示数据 ==========
+function initDemoData() {
+  if (!loadData('initialized')) {
+    // 生活待办示例
+    saveTodos('life', [
+      { id: 1, text: '预约牙医洗牙', deadline: new Date(Date.now() + 86400000 * 3).toISOString().slice(0,16), completed: false, createdAt: new Date().toISOString() },
+      { id: 2, text: '去 Costco 采购下周食材', deadline: null, completed: true, completedAt: new Date().toISOString(), createdAt: new Date().toISOString() }
+    ]);
+    // 工作待办示例
+    saveTodos('work', [
+      { id: 1, text: '整理 International Recruitment 季度数据报告', deadline: new Date(Date.now() + 86400000 * 2).toISOString().slice(0,16), reportTo: 'Sarah (Manager)', completed: false, createdAt: new Date().toISOString() },
+      { id: 2, text: '回复 Continuing Studies 新生邮件咨询', deadline: null, reportTo: '', completed: false, createdAt: new Date().toISOString() }
+    ]);
+    // 股票示例
+    saveStocks([
+      { id: 1, symbol: 'NVDA', shares: 10, costPrice: 120.50, marketPrice: 135.20, pnlNote: '目前赚$147，AI芯片龙头继续持有', updatedAt: '2025-07-28 09:30' },
+      { id: 2, symbol: 'RY', shares: 20, costPrice: 145.00, marketPrice: 142.30, pnlNote: '目前亏$54，等银行股回暖', updatedAt: '2025-07-28 09:30' }
+    ]);
+    // 存款示例
+    saveSavings([
+      { id: 1, type: 'income', account: 'savings', amount: 3500, description: '月度工资', date: '2025-7-1 09:00' },
+      { id: 2, type: 'expense', account: 'savings', amount: 1200, description: '房租', date: '2025-7-1 10:00' },
+      { id: 3, type: 'auto-debit', account: 'savings', amount: 85, description: '手机话费', date: '2025-7-5 00:00' },
+      { id: 4, type: 'expense', account: 'cash', amount: 45.60, description: '超市买菜', date: '2025-7-10 18:30' }
+    ]);
+    saveData('initialized', true);
+  }
+}
+
+// ========== 英语学习(生活) Tab 切换 ==========
+document.querySelectorAll('.el-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.el-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.el-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ========== 英语学习(工作) Paraphrase ==========
+function submitParaphrase(cardId) {
+  const input = $(`paraphrase-${cardId}`);
+  const feedback = $(`feedback-${cardId}`);
+  if (!input.value.trim()) return;
+
+  // 预设反馈示例（本地版）
+  feedback.innerHTML = `<strong>语法建议：</strong><br>你写得不错！这里有几个小建议：<br>1. 注意时态一致性<br>2. 可以尝试用更地道的表达<br><br><em style="color:var(--text-muted)">注：当前为演示反馈。实际使用时，我会在你提交后给出针对性的语法修改建议。</em>`;
+  feedback.classList.add('show');
+}
+
+// ========== 口语/写作提升（本地演示版） ==========
+function improveSpeaking() {
+  const input = $('speakingInput');
+  if (!input.value.trim()) return;
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '正在生成提升版本...';
+
+  const original = input.value;
+  // 模拟思考延迟
+  setTimeout(() => {
+    const improved = generateSpeakingImprovement(original);
+    const notes = '基于语法和表达习惯给出以下建议：1. 注意时态一致性 2. 尝试用更地道的短语 3. 适当丰富句式结构。';
+    $('speakingResult').innerHTML = `
+      <div class="improve-result show">
+        <div class="improved-version">
+          <strong>提升版本：</strong><br><br>${escapeHtml(improved)}
+          <br><br><strong>修改说明：</strong>${escapeHtml(notes)}
+        </div>
+        <div class="original">
+          <strong>你的原文：</strong><br>${escapeHtml(original)}
+        </div>
+      </div>
+    `;
+    saveData('speaking_' + today(), { original, improved });
+    btn.disabled = false;
+    btn.textContent = '帮我提升';
+  }, 800);
+}
+
+function improveWriting() {
+  const input = $('writingInput');
+  if (!input.value.trim()) return;
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '正在修改...';
+
+  const original = input.value;
+  setTimeout(() => {
+    const improved = generateWritingImprovement(original);
+    const notes = '修改要点：1. 修正语法错误 2. 优化用词 3. 调整句式使表达更自然。';
+    $('writingResult').innerHTML = `
+      <div class="improve-result show">
+        <div class="improved-version">
+          <strong>修改后版本：</strong><br><br>${escapeHtml(improved)}
+          <br><br><strong>修改说明：</strong>${escapeHtml(notes)}
+        </div>
+        <div class="original">
+          <strong>原文：</strong><br>${escapeHtml(original)}
+        </div>
+      </div>
+    `;
+    saveData('writing_' + today(), { original, improved });
+    btn.disabled = false;
+    btn.textContent = '修改提升';
+  }, 800);
+}
+
+// 本地生成的口语提升示例
+function generateSpeakingImprovement(original) {
+  // 简单的本地改写演示
+  let improved = original;
+  // 常见表达替换
+  improved = improved.replace(/\bvery good\b/gi, 'excellent');
+  improved = improved.replace(/\bvery bad\b/gi, 'terrible');
+  improved = improved.replace(/\bI think\b/gi, 'I believe');
+  improved = improved.replace(/\bI want to\b/gi, 'I would like to');
+  improved = improved.replace(/\bget up\b/gi, 'wake up');
+  improved = improved.replace(/\bgo to work\b/gi, 'head to work');
+  improved = improved.replace(/\ba lot of\b/gi, 'plenty of');
+  improved = improved.replace(/\bbig\b/gi, 'significant');
+  improved = improved.replace(/\bhappy\b/gi, 'delighted');
+  improved = improved.replace(/\bsad\b/gi, 'down');
+  improved = improved.replace(/\btired\b/gi, 'exhausted');
+
+  // 如果原文是中文，给出英文翻译示例
+  if (/[\u4e00-\u9fa5]/.test(original)) {
+    return `[本地演示版] ${improved}\n\n—— 如果你写的是中文，实际使用时我会帮你翻译成英文并给出地道表达建议。当前为本地演示，主要做了简单的英文词汇替换优化。`;
+  }
+  return `[本地演示版] ${improved}\n\n—— 这是基于简单词汇替换生成的演示版本。实际使用时，我会根据上下文给出更自然的表达改写。`;
+}
+
+// 本地生成的写作修改示例
+function generateWritingImprovement(original) {
+  let improved = original;
+  // 修正常见语法错误
+  improved = improved.replace(/\bi\b/g, 'I');
+  improved = improved.replace(/\bdont\b/g, "don't");
+  improved = improved.replace(/\bcant\b/g, "can't");
+  improved = improved.replace(/\bwont\b/g, "won't");
+  improved = improved.replace(/\bisnt\b/g, "isn't");
+  improved = improved.replace(/\barent\b/g, "aren't");
+  improved = improved.replace(/\bdidnt\b/g, "didn't");
+  improved = improved.replace(/\bim\b/gi, "I'm");
+  improved = improved.replace(/\bive\b/gi, "I've");
+  improved = improved.replace(/\bthere going to\b/gi, "they're going to");
+  improved = improved.replace(/\bits a\b/gi, "it's a");
+  improved = improved.replace(/\bwhats\b/gi, "what's");
+  improved = improved.replace(/\bwheres\b/gi, "where's");
+
+  return `[本地演示版] ${improved}\n\n—— 这是基于常见语法规则修正的演示版本。实际使用时，我会给出更细致的语法和表达修改建议。`;
+}
+
+// ========== 资料处理 ==========
+function processResource() {
+  const file = $('resourceFile').files[0];
+  const action = $('resourceAction').value;
+  if (!file) return;
+
+  const result = $('resourceResult');
+  if (action === 'bilingual') {
+    result.innerHTML = `<div class="saved-resource-item"><strong>正在生成双语文章...</strong><br><em style="color:var(--text-muted)">本地模式下暂不支持 AI 双语生成。实际使用时，我会读取你上传的文档，生成中英双语版本。</em></div>`;
+  } else {
+    const resources = loadData('saved_resources', []);
+    resources.push({ name: file.name, date: now(), size: file.size });
+    saveData('saved_resources', resources);
+    renderSavedResources();
+    result.innerHTML = `<div class="saved-resource-item" style="color:var(--success);">✓ 已保存：${escapeHtml(file.name)}</div>`;
+  }
+}
+
+function renderSavedResources() {
+  const list = $('savedResources');
+  const resources = loadData('saved_resources', []);
+  if (resources.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-muted);padding:12px;">暂无保存的资料</div>';
+    return;
+  }
+  list.innerHTML = resources.map(r => `
+    <div class="saved-resource-item">
+      <strong>${escapeHtml(r.name)}</strong>
+      <span style="color:var(--text-muted);margin-left:8px;">${escapeHtml(r.date)}</span>
+    </div>
+  `).join('');
+}
+
+// ========== 梦境生成（本地版） ==========
+function generateDream() {
+  const place = $('dreamPlace').value.trim();
+  const people = $('dreamPeople').value.trim();
+  const mood = $('dreamMood').value.trim();
+  const scene = $('dreamScene').value.trim();
+  const desc = $('dreamDesc').value.trim();
+
+  if (!place && !people && !scene) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '正在创作...';
+
+  // 本地生成
+  setTimeout(() => {
+    const zhArticle = `那是一个弥漫着${mood || '恍惚'}气息的梦境。\n\n我站在${place || '一片陌生的空间'}里，四周的轮廓若隐若现。${people ? '身旁是' + people + '，' : ''}他们的面容在光影中模糊而温柔。\n\n${scene ? '最深刻的是那个画面——' + scene + '。' : ''}那一刻，时间像是被施了魔法，静止在某个永恒的瞬间。\n\n${desc || ''}\n\n醒来时，那份感受还萦绕在心头，像是某种讯息，又或是潜意识对现实的低语。`;
+    const enArticle = `It was a dream suffused with ${mood || 'a surreal'} atmosphere.\n\nI found myself standing ${place ? 'in ' + place : 'in an unfamiliar space'}, the outlines of everything flickering between presence and absence. ${people ? 'Beside me was ' + people + ',' : ''} their faces soft and blurred in the play of light and shadow.\n\n${scene ? 'What struck me most was that scene — ' + scene + '.' : ''} For a moment, time seemed enchanted, suspended in some eternal instant.\n\n${desc || ''}\n\nUpon waking, the feeling lingered — like a message, or perhaps the subconscious whispering to the waking world.`;
+    const interpretation = generateDreamInterpretation(place, people, mood, scene, desc);
+
+    $('dreamResult').innerHTML = `
+      <div class="dream-article">
+        <h3>🌙 梦境故事</h3>
+        <div class="zh-version">${escapeHtml(zhArticle)}</div>
+        <div class="en-version">${escapeHtml(enArticle)}</div>
+      </div>
+    `;
+    $('dreamInterpretationContent').innerHTML = interpretation;
+    $('dreamInterpretation').style.display = 'block';
+
+    const history = loadData('dream_history', []);
+    history.unshift({
+      id: Date.now(),
+      date: now(),
+      place, people, mood, scene,
+      preview: zhArticle.slice(0, 50) + '...',
+      interpretation: interpretation
+    });
+    if (history.length > 20) history.pop();
+    saveData('dream_history', history);
+    renderDreamHistory();
+
+    ['dreamPlace','dreamPeople','dreamMood','dreamScene','dreamDesc'].forEach(id => $(id).value = '');
+    btn.disabled = false;
+    btn.textContent = '生成梦境文章';
+  }, 800);
+}
+
+function renderDreamHistory() {
+  const list = $('dreamHistory');
+  const history = loadData('dream_history', []);
+  if (history.length === 0) {
+    list.innerHTML = '';
+    return;
+  }
+  list.innerHTML = '<h3 style="margin-bottom:12px;font-size:16px;">历史梦境</h3>' + history.map(d => `
+    <div class="dream-item">
+      <div class="dream-item-title">${d.place ? '📍 ' + escapeHtml(d.place) + ' · ' : ''}${escapeHtml(d.mood || '梦境')}</div>
+      <div class="dream-item-date">${escapeHtml(d.date)}</div>
+    </div>
+  `).join('');
+}
+
+// ========== 随机灵感 ==========
+function saveInspiration() {
+  const input = $('randomInput');
+  if (!input.value.trim()) return;
+
+  const list = loadData('inspirations', []);
+  list.unshift({
+    id: Date.now(),
+    content: input.value.trim(),
+    date: now(),
+    expanded: null
+  });
+  saveData('inspirations', list);
+  input.value = '';
+  renderInspirations();
+}
+
+// 灵感拓展（本地版）
+function expandInspiration() {
+  const input = $('randomInput');
+  if (!input.value.trim()) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '正在拓展灵感...';
+
+  const content = input.value.trim();
+  setTimeout(() => {
+    const suggestions = generateInspirationSuggestions(content);
+    $('randomResult').innerHTML = `
+      <div class="improve-result show">
+        <div class="improved-version">
+          <strong>灵感拓展：</strong><br><br>
+          基于你记录的「${escapeHtml(content)}」：<br><br>
+          ${suggestions}
+        </div>
+      </div>
+    `;
+    btn.disabled = false;
+    btn.textContent = '给我灵感拓展';
+  }, 600);
+}
+
+// 本地生成的灵感拓展建议
+function generateInspirationSuggestions(content) {
+  const suggestions = [];
+  suggestions.push(`• <strong>延伸思考</strong>：把这个灵感进一步展开——它的核心是什么？是否可以应用到你目前的工作或生活中？`);
+  suggestions.push(`• <strong>反向思考</strong>：如果反过来想，这个灵感的对立面会带来什么启发？`);
+  suggestions.push(`• <strong>跨界结合</strong>：把这个灵感和你熟悉的另一个领域（教育、技术、生活方式）结合，会产生什么新想法？`);
+  suggestions.push(`• <strong>行动转化</strong>：把这个灵感转化为一个具体的可执行行动——本周可以做什么尝试？`);
+  suggestions.push(`• <strong>记录价值</strong>：这个灵感为什么现在出现？它可能回应了你最近的什么需求或困惑？`);
+  return suggestions.join('<br>');
+}
+
+function renderInspirations() {
+  const list = $('inspirationList');
+  const inspirations = loadData('inspirations', []);
+  if (inspirations.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-muted);padding:12px;">暂无灵感记录</div>';
+    return;
+  }
+  list.innerHTML = inspirations.map(i => `
+    <div class="inspiration-item">
+      <div class="inspiration-item-content">${escapeHtml(i.content)}</div>
+      <div class="inspiration-item-meta">${escapeHtml(i.date)}</div>
+      ${i.expanded ? `<div class="inspiration-item-expand"><strong>灵感拓展：</strong>${escapeHtml(i.expanded)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ========== AI 内容刷新（本地版，setTimeout + 演示数据） ==========
+function refreshModule(module) {
+  const btn = event.target;
+  btn.disabled = true;
+
+  if (module === 'vpea-inspiration') {
+    btn.textContent = '正在搜集教育/留学热点...';
+    $('vpeaContent').innerHTML = '<div class="loading-placeholder">正在搜集今日 10 条教育/留学/签证移民热点...</div>';
+    $('vpeaTopicSuggestion').style.display = 'none';
+
+    setTimeout(() => {
+      const contentHtml = getVpeaDemoContent();
+      const topicHtml = getVpeaTopicSuggestion();
+      $('vpeaContent').innerHTML = contentHtml;
+      $('vpeaTopicContent').innerHTML = topicHtml;
+      $('vpeaTopicSuggestion').style.display = 'block';
+      $('vpeaLastUpdate').textContent = now();
+      saveData('vpea_content', { content: contentHtml, topic: topicHtml, date: now() });
+      btn.disabled = false;
+      btn.textContent = '今日更新';
+    }, 1000);
+
+  } else if (module === 'stocks') {
+    btn.textContent = '正在分析市场...';
+    $('stocksNews').innerHTML = '<div class="loading-placeholder">正在搜集美股/加股新闻...</div>';
+
+    setTimeout(() => {
+      const html = getStocksDemoContent();
+      $('stocksNews').innerHTML = html;
+      $('stocksLastUpdate').textContent = now();
+      saveData('stocks_content', { content: html, date: now() });
+      btn.disabled = false;
+      btn.textContent = '今日复盘';
+    }, 1000);
+
+  } else if (module === 'english-work') {
+    btn.textContent = '正在准备学习材料...';
+    $('englishWorkContent').innerHTML = '<div class="loading-placeholder">正在搜集工作英语材料...</div>';
+
+    setTimeout(() => {
+      const html = getEnglishWorkDemoContent();
+      $('englishWorkContent').innerHTML = html;
+      $('englishWorkLastUpdate').textContent = now();
+      saveData('english_work_content', { content: html, date: now() });
+      btn.disabled = false;
+      btn.textContent = '今日学习材料';
+    }, 1000);
+
+  } else if (module === 'todo-life' || module === 'todo-work') {
+    btn.textContent = '处理中...';
+    setTimeout(() => {
+      if (module === 'todo-life') renderTodos('life');
+      else renderTodos('work');
+      btn.disabled = false;
+      btn.textContent = '刷新灵感';
+      showToast('已刷新本地数据');
+    }, 300);
+
+  } else if (module === 'italian') {
+    btn.textContent = '正在生成今日课程...';
+    $('italianContent').innerHTML = '<div class="loading-placeholder">正在准备意大利语学习材料...</div>';
+
+    setTimeout(() => {
+      const level = loadData('italian_level', 'beginner');
+      const html = getItalianDemoContent(level);
+      $('italianContent').innerHTML = html;
+      $('italianLastUpdate').textContent = now();
+      saveData('italian_content', { content: html, level, date: now() });
+      updateItalianProgress();
+      btn.disabled = false;
+      btn.textContent = '今日课程';
+    }, 1000);
+  }
+}
+
+// ========== 演示内容生成 ==========
+function getVpeaDemoContent() {
+  const news = [
+    { tag: '留学', tagClass: 'edu', title: '加拿大统计局发布2026最新社会报告：这3个趋势华人家庭都值得关注', summary: '报告显示加拿大高等教育留学生人数持续增长，其中来自亚洲的留学生占比超过50%。K-12阶段低龄留学需求回升。', source: '加拿大统计局', sourceUrl: 'https://www150.statcan.gc.ca', suggestion: '可写：结合VPEA服务，分析这些趋势对计划留学的中国家庭意味着什么，强调早期规划的重要性。' },
+    { tag: '教育', tagClass: 'edu', title: 'OUAC 2026年度报告｜加拿大大学最新申请数据与趋势全解析', summary: '安省大学申请中心数据显示，国际生申请量回升，商科和计算机科学竞争最激烈。部分学校扩大了早申名额。', source: 'OUAC官网', sourceUrl: 'https://www.ouac.on.ca', suggestion: '可写：给12年级学生的申请时间轴，提醒在某个时间段该做什么。VPEA之前发过类似主题可以做成系列。' },
+    { tag: '签证移民', tagClass: 'visa', title: '加拿大多类移民申请审批提速，最快6个月获批', summary: 'IRCC更新了处理时间，Express Entry部分类别加速。学签审批流程有新变化，SDS通道保持快速。', source: 'IRCC官网', sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship.html', suggestion: '可写：给在读留学生的签证续签提醒，以及毕业后工签(PGWP)申请注意事项。' },
+    { tag: '留学', tagClass: 'edu', title: '2027 QS就业成果排名出炉：加拿大这些高校就业表现反超综合排名', summary: '多伦多大��、滑铁卢大学在就业成果排名中表现突出，部分学校就业率超过其综合排名位置。', source: 'QS Top Universities', sourceUrl: 'https://www.topuniversities.com', suggestion: '可写：专业介绍系列——哪些专业就业率高？结合UVic Continuing Studies的课程设置。' },
+    { tag: '教育', tagClass: 'edu', title: '12年级升学系列｜2026-27加拿大大学申请时间轴', summary: '从9月开学到来年6月，各阶段关键节点提醒，包括OUAC/UBC等系统开放和截止日期。', source: 'VPEA公众号', sourceUrl: 'https://www.jintiankansha.com/column/6jupRG3NEp', suggestion: '可写：把这个时间轴做成图文版，补充UVic的具体申请建议。' },
+    { tag: '留学', tagClass: 'edu', title: 'UBC MBA免GMAT/GRE？还有6万加币奖学金？2027申请通道已开', summary: 'UBC Sauder商学院MBA项目2027申请开放，提供免GMAT选项和高额奖学金。', source: 'UBC Sauder官网', sourceUrl: 'https://www.sauder.ubc.ca', suggestion: '可写：加拿大商学院MBA项目对比系列，也可以介绍UVic Gustavson商学院。' },
+    { tag: '签证移民', tagClass: 'visa', title: 'BC省提名移民(PNP)最新邀请分数公布', summary: 'BC PNP Tech类别继续低分邀请，留学生类别分数线稳定。毕业生移民路径依然通畅。', source: 'BC PNP官网', sourceUrl: 'https://www.welcomebc.ca/Immigrate-to-B-C/Skills-Immigration', suggestion: '可写：留学生毕业后的移民路径全梳理，适合大四学生和刚毕业的校友。' },
+    { tag: '教育', tagClass: 'edu', title: 'SFU两位计算机科学教授获任加拿大人工智能教席', summary: '加拿大AI战略持续加码，SFU在AI研究领域投入加大，对留学生选专业有参考价值。', source: 'SFU官网', sourceUrl: 'https://www.sfu.ca', suggestion: '可写：加拿大AI/计算机科学专业介绍系列，包括UVic的CS项目。' },
+    { tag: '留学', tagClass: 'edu', title: '时薪近$40！加拿大政府招聘2027暑假学生边境服务官', summary: 'CBSA暑期学生项目开放申请，时薪高达$38，适合在校留学生申请，积累加拿大工作经验。', source: '加拿大政府招聘', sourceUrl: 'https://www.canada.ca/en/services/jobs/opportunities/government.html', suggestion: '可写：留学生暑期实习/工作机会汇总，如何申请政府学生岗位。' },
+    { tag: '签证移民', tagClass: 'visa', title: '加拿大更新留学生打工时长政策', summary: '2025年起留学生校外打工时长政策调整，假期可全职工作，学期内有小时限制。', source: 'IRCC官网', sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work.html', suggestion: '可写：留学生打工完全指南，包括SIN申请、税务、工时限制等实用信息。' }
+  ];
+
+  return news.map(n => `
+    <div class="news-card">
+      <h4><span class="news-tag ${n.tagClass}">${n.tag}</span>${n.title}</h4>
+      <p class="news-summary">${n.summary}</p>
+      <div class="news-source">来源：${n.sourceUrl ? `<a href="${n.sourceUrl}" target="_blank" rel="noopener">${n.source} ↗</a>` : n.source}</div>
+      <div class="inspiration-suggestion"><strong>💡 选题建议：</strong>${n.suggestion}</div>
+    </div>
+  `).join('');
+}
+
+function getStocksDemoContent() {
+  const stocks = getStocks();
+  if (stocks.length === 0) {
+    return `<div class="news-card"><p class="news-summary">请先添加你的持仓股票，然后点击「今日分析」获取基于你持仓的走势分析和买卖建议。</p></div>`;
+  }
+
+  const symbols = stocks.map(s => s.symbol).join('、');
+  const stockList = stocks.map(s => {
+    const trend = s.marketPrice > s.costPrice ? '📈 上涨' : s.marketPrice < s.costPrice ? '📉 下跌' : '➡️ 持平';
+    const change = s.costPrice > 0 ? ((s.marketPrice - s.costPrice) / s.costPrice * 100).toFixed(2) : 0;
+    const changeSign = change >= 0 ? '+' : '';
+    return `<tr><td><strong>${escapeHtml(s.symbol)}</strong></td><td>$${s.costPrice.toFixed(2)}</td><td>$${s.marketPrice.toFixed(2)}</td><td style="color:${change>=0?'var(--success)':'var(--danger)'}">${changeSign}${change}%</td><td>${trend}</td></tr>`;
+  }).join('');
+
+  const advice = stocks.map(s => {
+    if (s.marketPrice > s.costPrice * 1.1) return `${s.symbol}：涨幅较大，可考虑部分止盈，锁定利润`;
+    if (s.marketPrice < s.costPrice * 0.9) return `${s.symbol}：跌幅较大，关注是否破位，考虑止损或逢低补仓`;
+    if (s.marketPrice > s.costPrice) return `${s.symbol}：温和上涨，趋势良好，建议继续持有`;
+    return `${s.symbol}：短期承压，观望为主，关注支撑位`;
+  });
+
+  return `
+    <div class="news-card">
+      <h4>📊 持仓概览</h4>
+      <p class="news-summary">当前持仓：${symbols}，共 ${stocks.length} 只股票</p>
+      <table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:8px;">
+        <thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:4px;">代码</th><th style="text-align:left;padding:4px;">成本价</th><th style="text-align:left;padding:4px;">市场价</th><th style="text-align:left;padding:4px;">涨跌</th><th style="text-align:left;padding:4px;">趋势</th></tr></thead>
+        <tbody>${stockList}</tbody>
+      </table>
+    </div>
+    <div class="news-card">
+      <h4>🔍 走势分析</h4>
+      <p class="news-summary">
+        基于你当前的持仓分析：<br>
+        ${stocks.map(s => `• <strong>${escapeHtml(s.symbol)}</strong>：成本 $${s.costPrice.toFixed(2)} → 市场 $${s.marketPrice.toFixed(2)}，${s.marketPrice >= s.costPrice ? '处于盈利区间' : '目前浮亏中'}。${s.pnlNote ? '你的备注：' + escapeHtml(s.pnlNote) : ''}`).join('<br>')}
+      </p>
+      <div class="news-source">分析时间：${now()}</div>
+    </div>
+    <div class="news-card">
+      <h4>💡 操作建议</h4>
+      <p class="news-summary">
+        ${advice.map(a => `• ${a}`).join('<br>')}
+      </p>
+      <div class="inspiration-suggestion"><strong>⚠️ 免责声明：</strong>以上分析仅供参考，不构成投资建议。股市有风险，投资需谨慎。请根据自身情况做出独立判断。</div>
+    </div>
+    <div class="news-card">
+      <h4>🌐 市场参考</h4>
+      <p class="news-summary">建议关注以下信息来源获取最新行情：</p>
+      <div class="news-source">
+        <a href="https://finance.yahoo.com" target="_blank" rel="noopener">Yahoo Finance ↗</a> · 
+        <a href="https://www.marketwatch.com" target="_blank" rel="noopener">MarketWatch ↗</a> · 
+        <a href="https://www.cnbc.com" target="_blank" rel="noopener">CNBC ↗</a> · 
+        <a href="https://www.bloomberg.com" target="_blank" rel="noopener">Bloomberg ↗</a>
+      </div>
+    </div>
+  `;
+}
+
+function getEnglishWorkDemoContent() {
+  const lessons = [
+    {
+      title: 'Small Talk: New Colleague Onboarding',
+      source: 'Harvard Business Review',
+      sourceUrl: 'https://hbr.org',
+      vocab: ['onboarding', 'icebreaker', 'ramp-up period', 'touch base', 'shadowing'],
+      en: 'Welcome to the team! During your first week, we\'ll have you shadow a few team members to get familiar with our workflows. Don\'t hesitate to ask questions — the ramp-up period is meant for learning. Let\'s touch base every Friday to see how you\'re settling in.',
+      zh: '欢迎加入团队！在你的第一周，我们会安排你跟随几位团队成员熟悉工作流程。有问题随时问——适应期就是用来学习的。我们每周五碰一下，看看你适应得怎么样。',
+      highlight: 'Let\'s <span class="highlight-sentence">touch base</span> every Friday to see how you\'re <span class="highlight-sentence">settling in</span>.'
+    },
+    {
+      title: 'Meeting Expressions: Program Updates',
+      source: 'UVic Continuing Studies',
+      sourceUrl: 'https://www.uvic.ca/continuing-studies',
+      vocab: ['recruitment pipeline', 'conversion rate', 'stakeholder', 'deliverables', 'action item'],
+      en: 'To recap our recruitment pipeline for the Fall intake: we\'re seeing a 15% increase in inquiries but conversion rate has dipped slightly. Our main deliverable this quarter is to streamline the application process for international students.',
+      zh: '回顾一下秋季招生的进展：咨询量增加了15%，但转化率略有下降。我们这个季度的主要任务是简化国际学生的申请流程。',
+      highlight: 'conversion rate has <span class="highlight-sentence">dipped slightly</span>'
+    },
+    {
+      title: 'Communicating with Students: Program Info',
+      source: 'NAFSA Association',
+      sourceUrl: 'https://www.nafsa.org',
+      vocab: ['prerequisites', 'tuition deposit', 'enrollment', 'deadline', 'waiver'],
+      en: 'The program has specific prerequisites you\'ll need to meet before enrollment. Your tuition deposit is due by the deadline stated in your offer letter. If you need a prerequisite waiver, you can submit a request with your transcripts.',
+      zh: '这个项目有特定的先修课程要求，注册前需要满足。学费押金需要在录取通知书上注明的截止日期前缴纳。如果需要申请先修课程豁免，可以连同成绩单一起提交申请。',
+      highlight: 'Your <span class="highlight-sentence">tuition deposit</span> is due by the <span class="highlight-sentence">deadline</span>'
+    }
+  ];
+
+  return lessons.map((l, i) => `
+    <div class="english-card">
+      <h4>${l.title}</h4>
+      <div class="news-source">来源：${l.sourceUrl ? `<a href="${l.sourceUrl}" target="_blank" rel="noopener">${l.source} ↗</a>` : l.source}</div>
+      <div class="vocab-list">
+        ${l.vocab.map((v, vi) => `<span class="vocab-tag">${v}<button class="speak-btn" onclick="speak('${v.replace(/'/g, "\\'")}', this)" title="朗读">🔊</button></span>`).join('')}
+      </div>
+      <div class="bilingual">
+        <div class="en">${l.en}<button class="speak-paragraph" onclick="speak(\`${l.en.replace(/`/g, '\\`').replace(/'/g, "\\'")}\`, this)" title="朗读整段">🔊 朗读</button></div>
+        <div class="zh">${l.zh}</div>
+      </div>
+      <p style="font-size:13px;margin:8px 0;">高亮表达：${l.highlight}</p>
+      <div class="paraphrase-area">
+        <label>✍️ 你的 Paraphrase（用自己的话总结）</label>
+        <textarea class="paraphrase-input" id="paraphrase-${i}" placeholder="Write your own summary here..."></textarea>
+        <button class="btn-improve" style="margin-top:8px;" onclick="submitParaphrase(${i})">提交并获取反馈</button>
+        <div class="feedback-area" id="feedback-${i}" style="display:none;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== VPEA 今日主题建议 ==========
+function getVpeaTopicSuggestion() {
+  return `
+    <div class="topic-block">
+      <h4 style="font-size:15px;color:var(--text-primary);margin-bottom:8px;">🌟 推荐主题：<em>2026加拿大大学申请季：12年级学生9月行动指南</em></h4>
+      <p style="margin-bottom:10px;">结合今天的热点——OUAC申请数据发布、申请时间轴更新、以及签证政策变化，建议写一篇针对12年级学生（及家长）的9月行动指南。这个时间点正好是开学季，搜索需求高，且VPEA之前发过类似主题可以做成系列文。</p>
+      <p style="font-size:13px;color:var(--accent);margin-bottom:6px;"><strong>📋 建议大纲：</strong></p>
+      <div class="outline-item">引言：2026申请季来了——今年有什么新变化？（引用OUAC数据吸引点击）</div>
+      <div class="outline-item">第一部分：9-10月关键节点——OUAC/UBC/UVic等系统开放时间及准备清单</div>
+      <div class="outline-item">第二部分：专业选择指南——结合QS就业排名，推荐3个高就业率专业方向</div>
+      <div class="outline-item">第三部分：签证新规对申请的影响——学签审批时间线如何倒推申请节奏</div>
+      <div class="outline-item">第四部分：VPEA专属——我们如何帮学生做申请规划（软性植入服务）</div>
+      <div class="outline-item">结尾：行动号召——扫码咨询/预约1对1规划（附CTA二维码）</div>
+    </div>
+    <div class="topic-block">
+      <h4 style="font-size:15px;color:var(--text-primary);margin-bottom:8px;">📌 备选主题：<em>加拿大留学生打工完全指南（2025新规版）</em></h4>
+      <p>留学生打工政策有更新，搜索量大。适合做成实用工具文，传播性较强。</p>
+      <p style="font-size:13px;color:var(--accent);margin-bottom:6px;"><strong>📋 建议大纲：</strong></p>
+      <div class="outline-item">2025打工时长新规解读（学期中 vs 假期）</div>
+      <div class="outline-item">SIN卡申请全流程图文教程</div>
+      <div class="outline-item">税务基础知识：留学生要报税吗？</div>
+      <div class="outline-item">高薪学生岗位推荐（如CBSA暑期项目$38/时）</div>
+      <div class="outline-item">打工 vs 学习平衡建议</div>
+    </div>
+    <div class="topic-block">
+      <h4 style="font-size:15px;color:var(--text-primary);margin-bottom:8px;">📌 备选主题：<em>专业介绍系列——加拿大AI/计算机科学专业盘点</em></h4>
+      <p>SFU获AI教席的新闻可以做切入点。VPEA之前没有系统介绍过CS/AI专业，有内容空白可以填补。</p>
+      <p style="font-size:13px;color:var(--accent);margin-bottom:6px;"><strong>📋 建议大纲：</strong></p>
+      <div class="outline-item">加拿大AI战略背景——为什么选加拿大学CS？</div>
+      <div class="outline-item">5所CS强校对比：多大、滑铁卢、UBC、UVic、SFU</div>
+      <div class="outline-item">UVic Continuing Studies相关课程路径</div>
+      <div class="outline-item">就业前景与薪资数据</div>
+      <div class="outline-item">申请要求与建议</div>
+    </div>
+  `;
+}
+
+// ========== 梦境解梦 ==========
+function generateDreamInterpretation(place, people, mood, scene, desc) {
+  // 基于荣格分析心理学和常见梦境符号词典生成解梦
+  let symbols = [];
+  let analysis = [];
+  let advice = [];
+
+  // 地点解读
+  if (place) {
+    if (place.includes('海') || place.includes('水') || place.includes('河') || place.includes('湖')) {
+      symbols.push({ symbol: '水/海洋', meaning: '情感与潜意识' });
+      analysis.push('水在梦中通常代表情感状态和潜意识深处。梦见海洋或水域，暗示你正在经历情感上的波动或对某种深层感受的探索。');
+    } else if (place.includes('学校') || place.includes('教室') || place.includes('大学')) {
+      symbols.push({ symbol: '学校', meaning: '学习与成长' });
+      analysis.push('学校象征着学习、自我提升和对知识的渴求。可能暗示你正在面对需要学习的课题，或对自身能力有新的认知需求。');
+    } else if (place.includes('家') || place.includes('房间') || place.includes('房子')) {
+      symbols.push({ symbol: '房屋/家', meaning: '自我与内心世界' });
+      analysis.push('房子通常代表自我。不同的房间象征心理的不同层面——卧室是私密自我，客厅是社交面貌，未知的房间暗示你正在发现自身未知的一面。');
+    } else if (place.includes('森林') || place.includes('山') || place.includes('树')) {
+      symbols.push({ symbol: '森林/山', meaning: '未知与探索' });
+      analysis.push('森林和山脉象征未知领域和需要克服的挑战。暗示你正站在人生某个转折点，面对不确定但充满可能性的未来。');
+    } else if (place.includes('机场') || place.includes('飞机') || place.includes('车') || place.includes('路')) {
+      symbols.push({ symbol: '交通/旅途', meaning: '人生过渡' });
+      analysis.push('交通工具和旅途象征人生过渡。可能暗示你正在经历或渴望某种转变——工作、关系或生活阶段的变化。');
+    } else {
+      symbols.push({ symbol: place, meaning: '特定场景' });
+      analysis.push(`梦见「${place}」这个场景，反映了你潜意识对特定环境或情境的关注。结合你近期的经历，思考这个地方对你有什么特殊意义。`);
+    }
+  }
+
+  // 人物解读
+  if (people) {
+    if (people.includes('家人') || people.includes('父母') || people.includes('妈') || people.includes('爸')) {
+      symbols.push({ symbol: '家人', meaning: '安全感与根源' });
+      analysis.push('家人出现在梦中，通常与安全感、归属感和情感支持有关。可能暗示你近期需要家人的支持，或在思考与家庭相关的重要决定。');
+    } else if (people.includes('陌生人') || people.includes('不认识')) {
+      symbols.push({ symbol: '陌生人', meaning: '未知的自我' });
+      analysis.push('陌生人往往代表你自身未被认知的部分——可能是隐藏的才能、被压抑的情感，或某种你尚未承认的渴望。');
+    } else if (people.includes('同事') || people.includes('老板') || people.includes('领导')) {
+      symbols.push({ symbol: '工作人物', meaning: '职业焦虑与成就' });
+      analysis.push('工作相关人物出现在梦中，反映了职业层面的思考——可能是对工作表现的焦虑、对认可的渴望，或对某项任务的潜在压力。');
+    } else if (people.includes('动物') || people.includes('狗') || people.includes('猫') || people.includes('鸟')) {
+      symbols.push({ symbol: '动物', meaning: '本能与直觉' });
+      analysis.push('动物象征本能和直觉。不同动物有不同含义——狗代表忠诚与友谊，猫代表独立与神秘，鸟代表自由与灵性。');
+    } else {
+      symbols.push({ symbol: people, meaning: '人际关系' });
+      analysis.push(`梦中出现「${people}」，可能代表你与这类人的关系，或他们身上有你认同/排斥的特质正在影响你。`);
+    }
+  }
+
+  // 情绪解读
+  if (mood) {
+    if (mood.includes('恐惧') || mood.includes('害怕') || mood.includes('焦虑')) {
+      symbols.push({ symbol: '恐惧情绪', meaning: '面对的挑战' });
+      analysis.push('梦中的恐惧不代表坏事——它通常指向你现实中正在回避但需要面对的事物。潜意识在提醒你：这件事需要被处理。');
+    } else if (mood.includes('快乐') || mood.includes('开心') || mood.includes('兴奋')) {
+      symbols.push({ symbol: '快乐情绪', meaning: '内在满足' });
+      analysis.push('梦中的快乐体验是内在满足感的投射。可能暗示你生活中某些方面正向好的方向发展，或你的潜意识在鼓励你继续当前的路径。');
+    } else if (mood.includes('迷茫') || mood.includes('困惑') || mood.includes('迷路')) {
+      symbols.push({ symbol: '迷茫感', meaning: '方向探索' });
+      analysis.push('迷茫感反映了你对人生某个方向的不确定。这是成长的信号——当你开始质疑方向，说明你在认真思考未来，这本身就是前进。');
+    } else if (mood.includes('悲伤') || mood.includes('哭') || mood.includes('难过')) {
+      symbols.push({ symbol: '悲伤情绪', meaning: '情感释放' });
+      analysis.push('梦中的悲伤是情感释放的渠道。你可能在现实中压抑了某些感受，梦境提供了一个安全的出口来处理这些情绪。');
+    }
+  }
+
+  // 关键画面解读
+  if (scene) {
+    if (scene.includes('飞') || scene.includes('飞翔') || scene.includes('浮')) {
+      symbols.push({ symbol: '飞翔', meaning: '自由与超越' });
+      analysis.push('飞翔梦是最常见的"清醒梦"主题之一，象征对自由的渴望和超越限制的能力。暗示你内心有强大的力量想要突破现状。');
+    } else if (scene.includes('掉') || scene.includes('坠') || scene.includes('下坠')) {
+      symbols.push({ symbol: '坠落', meaning: '失控感' });
+      analysis.push('坠落梦是最常见的梦境之一，通常出现在压力较大时。它象征某种失控感——对工作、关系或生活节奏感到难以掌控。');
+    } else if (scene.includes('追') || scene.includes('跑') || scene.includes('逃')) {
+      symbols.push({ symbol: '追逐/逃跑', meaning: '回避' });
+      analysis.push('被追赶的梦象征你在回避某个问题。追赶你的东西就是你内心知道需要面对但一直在逃避的事物。');
+    } else if (scene.includes('光') || scene.includes('亮') || scene.includes('太阳')) {
+      symbols.push({ symbol: '光亮', meaning: '希望与启示' });
+      analysis.push('光象征希望、启示和清晰。暗示你正在找到答案，或即将迎来某个困惑的解答。');
+    } else if (scene.includes('黑') || scene.includes('暗') || scene.includes('看不见')) {
+      symbols.push({ symbol: '黑暗', meaning: '未知与潜在' });
+      analysis.push('黑暗不代表负面——它是未知和潜能的象征。暗示你正站在某个新阶段的入口，虽然看不清但充满了可能性。');
+    }
+  }
+
+  // 总结建议
+  advice.push('梦境是潜意识与意识对话的桥梁。以上分析基于荣格分析心理学和常见梦境符号学，供你参考和反思。');
+  if (analysis.length > 0) {
+    advice.push('建议你回想一下：最近生活中是否有什么事情，和梦境中的感受产生了共鸣？那个连接点，可能就是梦境想告诉你的讯息。');
+  }
+  if (mood && (mood.includes('恐惧') || mood.includes('焦虑') || mood.includes('迷茫'))) {
+    advice.push('如果你近期压力较大，建议尝试睡前冥想或写日记，帮助潜意识更好地处理白天的情绪。');
+  }
+
+  let html = '';
+
+  // 梦境符号
+  if (symbols.length > 0) {
+    html += '<div class="interp-section">';
+    html += '<h4>🔑 梦境核心符号</h4>';
+    symbols.forEach(s => {
+      html += `<span class="interp-symbol">${escapeHtml(s.symbol)} → ${escapeHtml(s.meaning)}</span>`;
+    });
+    html += '</div>';
+  }
+
+  // 引用
+  html += '<div class="interp-quote">"梦是潜意识写给意识的一封信，只不过它用的是象征的语言。"<br>—— 基于 Carl Jung 荣格分析心理学</div>';
+
+  // 详细分析
+  if (analysis.length > 0) {
+    html += '<div class="interp-section">';
+    html += '<h4>📖 梦境解读</h4>';
+    analysis.forEach(a => {
+      html += `<p style="margin-bottom:10px;">${escapeHtml(a)}</p>`;
+    });
+    html += '</div>';
+  }
+
+  // 建议
+  if (advice.length > 0) {
+    html += '<div class="interp-section">';
+    html += '<h4>💡 反思建议</h4>';
+    advice.forEach(a => {
+      html += `<p style="margin-bottom:8px;">${escapeHtml(a)}</p>`;
+    });
+    html += '</div>';
+  }
+
+  html += '<p style="font-size:12px;color:var(--text-muted);margin-top:12px;">注：解梦基于分析心理学（荣格/弗洛伊德）和常见梦境符号词典，仅供自我反思参考，不代表专业心理咨询建议。</p>';
+
+  return html;
+}
+
+// ========== 减肥记录 ==========
+function getDietData() { return loadData('diet', { goal: null, weights: [], foodLogs: [], ingredients: [] }); }
+function saveDietData(data) { saveData('diet', data); }
+
+function saveDietGoal() {
+  const current = parseFloat($('dietCurrentWeight').value);
+  const target = parseFloat($('dietTargetWeight').value);
+  if (!current || !target) return;
+
+  const data = getDietData();
+  data.goal = { current, target, setAt: new Date().toISOString() };
+
+  // 添加今日体重记录
+  if (data.weights.length === 0 || data.weights[0].date !== today()) {
+    data.weights.unshift({ date: today(), weight: current });
+    if (data.weights.length > 90) data.weights.pop();
+  } else {
+    data.weights[0].weight = current;
+  }
+
+  saveDietData(data);
+  $('dietCurrentWeight').value = '';
+  $('dietTargetWeight').value = '';
+  renderDietGoal();
+  renderWeightTrack();
+}
+
+function renderDietGoal() {
+  const data = getDietData();
+  const display = $('dietGoalDisplay');
+  if (!data.goal) {
+    display.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">请设置当前体重和目标体重</p>';
+    return;
+  }
+  const { current, target } = data.goal;
+  const diff = (current - target).toFixed(1);
+  const startWeight = data.weights[data.weights.length - 1]?.weight || current;
+  const totalProgress = startWeight - current;
+  const totalNeeded = startWeight - target;
+  const progressPct = totalNeeded > 0 ? Math.min(100, (totalProgress / totalNeeded) * 100) : 100;
+
+  display.innerHTML = `
+    <div class="goal-row"><span>当前体重</span><strong>${current} kg</strong></div>
+    <div class="goal-row"><span>目标体重</span><strong>${target} kg</strong></div>
+    <div class="goal-row"><span>还需减重</span><strong style="color:${diff > 0 ? 'var(--danger)' : 'var(--success)'}">${diff > 0 ? diff : '已达标!'}${diff > 0 ? ' kg' : ''}</strong></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%"></div></div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">进度：${progressPct.toFixed(0)}%</p>
+  `;
+}
+
+function renderWeightTrack() {
+  const data = getDietData();
+  const list = $('weightTrackList');
+  if (data.weights.length === 0) {
+    list.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">暂无体重记录</p>';
+    return;
+  }
+  list.innerHTML = data.weights.map((w, i) => {
+    let changeStr = '';
+    if (i < data.weights.length - 1) {
+      const change = (w.weight - data.weights[i + 1].weight).toFixed(1);
+      if (change > 0) changeStr = `<span class="weight-change down">↓ ${change} kg</span>`;
+      else if (change < 0) changeStr = `<span class="weight-change up">↑ ${Math.abs(change)} kg</span>`;
+      else changeStr = '<span class="weight-change">→ 持平</span>';
+    } else {
+      changeStr = '<span class="weight-change">起始记录</span>';
+    }
+    return `<div class="weight-item"><span>${escapeHtml(w.date)}</span><span><strong>${w.weight} kg</strong> ${changeStr}</span></div>`;
+  }).join('');
+}
+
+function addDietLog() {
+  const type = $('dietMealType').value;
+  const food = $('dietFoodInput').value.trim();
+  if (!food) return;
+
+  const data = getDietData();
+  const todayLog = data.foodLogs.find(f => f.date === today());
+  if (todayLog) {
+    todayLog.meals.push({ type, food, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) });
+  } else {
+    data.foodLogs.unshift({ date: today(), meals: [{ type, food, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }] });
+  }
+  saveDietData(data);
+  $('dietFoodInput').value = '';
+  renderDietLogs();
+}
+
+function renderDietLogs() {
+  const data = getDietData();
+  const list = $('dietLogList');
+  const todayLog = data.foodLogs.find(f => f.date === today());
+  if (!todayLog || todayLog.meals.length === 0) {
+    list.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">今日还没有饮食记录</p>';
+    return;
+  }
+  const mealLabels = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snack: '加餐' };
+  list.innerHTML = todayLog.meals.map((m, i) => `
+    <div class="diet-log-item">
+      <span class="meal-type ${m.type}">${mealLabels[m.type]}</span>
+      <span style="flex:1;">${escapeHtml(m.food)}</span>
+      <span style="color:var(--text-muted);font-size:11px;">${escapeHtml(m.time)}</span>
+    </div>
+  `).join('');
+}
+
+function addIngredient() {
+  const input = $('ingredientInput');
+  const ingredient = input.value.trim();
+  if (!ingredient) {
+    showToast('请输入食材名称');
+    return;
+  }
+  const data = getDietData();
+  if (data.ingredients.includes(ingredient)) {
+    showToast('该食材已存在');
+    return;
+  }
+  data.ingredients.push(ingredient);
+  saveDietData(data);
+  input.value = '';
+  renderIngredients();
+  showToast('食材已添加 ✓');
+}
+
+function removeIngredient(name) {
+  const data = getDietData();
+  data.ingredients = data.ingredients.filter(i => i !== name);
+  saveDietData(data);
+  renderIngredients();
+}
+
+function renderIngredients() {
+  const data = getDietData();
+  const list = $('ingredientList');
+  if (data.ingredients.length === 0) {
+    list.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">还没有添加食材</p>';
+    return;
+  }
+  list.innerHTML = data.ingredients.map(i => `
+    <span class="ingredient-tag">${escapeHtml(i)} <span class="remove-tag" onclick="removeIngredient('${escapeHtml(i)}')">✕</span></span>
+  `).join('');
+}
+
+// 食谱生成（本地版）
+function generateRecipe() {
+  const data = getDietData();
+  if (data.ingredients.length === 0) {
+    $('recipeResult').innerHTML = '<p style="color:var(--danger);">请先添加食材！</p>';
+    return;
+  }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '正在生成食谱...';
+
+  const ingredients = data.ingredients;
+  setTimeout(() => {
+    $('recipeResult').innerHTML = generateRecipeDemo(ingredients);
+    btn.disabled = false;
+    btn.textContent = '生成今日食谱';
+  }, 800);
+}
+
+function generateRecipeDemo(ingredients) {
+  const has = (kw) => ingredients.some(i => i.includes(kw));
+  const recipes = [];
+  const xhsLink = (dishName) => `<a class="recipe-xhs-link" href="https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(dishName + ' 做法')}" target="_blank" rel="noopener">📖 小红书看教学视频 ↗</a>`;
+
+  // 早餐推荐
+  let breakfast = '';
+  if (has('蛋') || has('鸡蛋')) {
+    breakfast = `
+      <div class="recipe-card">
+        <h4>🥚 番茄鸡蛋面 <span class="recipe-meal-label" style="background:rgba(245,158,11,0.15);color:var(--warning);">早餐</span></h4>
+        <p class="recipe-ingredients">食材：${ingredients.filter(i => i.includes('蛋') || i.includes('番茄') || i.includes('面')).join('、') || '鸡蛋、番茄、面条'}</p>
+        <p class="recipe-desc">鸡蛋打散炒熟备用，番茄切块炒出汁，加水煮开后下面条，最后放入炒蛋。搭配一杯<span style="color:var(--accent);">拿铁</span>（不要美式！加奶的拿铁或馥芮白都可以）。</p>
+        ${xhsLink('番茄鸡蛋面')}
+      </div>`;
+  } else {
+    breakfast = `
+      <div class="recipe-card">
+        <h4>🥣 小米南瓜粥 <span class="recipe-meal-label" style="background:rgba(245,158,11,0.15);color:var(--warning);">早餐</span></h4>
+        <p class="recipe-ingredients">食材：小米、南瓜（可从你现有食材中替换）</p>
+        <p class="recipe-desc">南瓜切块和小米一起煮粥，软糯养胃。搭配一杯<span style="color:var(--accent);">拿铁或卡布奇诺</span>，元气满满开始一天。</p>
+        ${xhsLink('小米南瓜粥')}
+      </div>`;
+  }
+  recipes.push(breakfast);
+
+  // 午餐推荐
+  if (has('鸡') || has('鸡胸') || has('鸡肉')) {
+    recipes.push(`
+      <div class="recipe-card">
+        <h4>🍗 西兰花炒鸡胸肉 <span class="recipe-meal-label" style="background:rgba(59,130,246,0.15);color:var(--accent);">午餐</span></h4>
+        <p class="recipe-ingredients">食材：${ingredients.filter(i => i.includes('鸡') || i.includes('西兰花') || i.includes('蒜')).join('、') || '鸡胸肉、西兰花'}</p>
+        <p class="recipe-desc">鸡胸肉切丁用料酒、生抽腌制15分钟，西兰花焯水，热锅少油爆香蒜末，先炒鸡丁再放西兰花，加盐和少许蚝油调味。高蛋白低脂，减脂期首选。</p>
+        ${xhsLink('西兰花炒鸡胸肉')}
+      </div>`);
+  } else if (has('猪') || has('牛肉')) {
+    recipes.push(`
+      <div class="recipe-card">
+        <h4>🥩 青椒肉丝 <span class="recipe-meal-label" style="background:rgba(59,130,246,0.15);color:var(--accent);">午餐</span></h4>
+        <p class="recipe-ingredients">食材：${ingredients.filter(i => i.includes('猪') || i.includes('牛') || i.includes('青椒')).join('、') || '猪肉/牛肉、青椒'}</p>
+        <p class="recipe-desc">肉切丝用生抽料酒腌制，青椒切丝，大火快炒保持青椒脆嫩。少油少盐版本，搭配一碗杂粮饭。</p>
+        ${xhsLink('青椒肉丝')}
+      </div>`);
+  } else {
+    recipes.push(`
+      <div class="recipe-card">
+        <h4>🥗 家常蔬菜炒饭 <span class="recipe-meal-label" style="background:rgba(59,130,246,0.15);color:var(--accent);">午餐</span></h4>
+        <p class="recipe-ingredients">食材：${ingredients.join('、')}${has('米') || has('饭') ? '' : '、剩米饭'}</p>
+        <p class="recipe-desc">把现有食材切丁，先炒蛋盛出，再炒蔬菜丁，最后下米饭和蛋翻炒。简单营养，适合消耗冰箱食材。</p>
+        ${xhsLink('蔬菜炒饭')}
+      </div>`);
+  }
+
+  // 晚餐推荐
+  if (has('鱼') || has('虾')) {
+    recipes.push(`
+      <div class="recipe-card">
+        <h4>🐟 清蒸鱼/白灼虾 <span class="recipe-meal-label" style="background:rgba(168,85,247,0.15);color:#a855f7;">晚餐</span></h4>
+        <p class="recipe-ingredients">食材：${ingredients.filter(i => i.includes('鱼') || i.includes('虾')).join('、') || '鱼/虾'}</p>
+        <p class="recipe-desc">鱼/虾清蒸保留原味，淋上调好的蒸鱼豉油和热油。低脂高蛋白，晚餐吃无负担。搭配焯水蔬菜即可。</p>
+        ${xhsLink('清蒸鱼 白灼虾')}
+      </div>`);
+  } else {
+    recipes.push(`
+      <div class="recipe-card">
+        <h4>🍲 蔬菜豆腐汤 <span class="recipe-meal-label" style="background:rgba(168,85,247,0.15);color:#a855f7;">晚餐</span></h4>
+        <p class="recipe-ingredients">食材：${ingredients.join('、')}${has('豆腐') ? '' : '、豆腐'}</p>
+        <p class="recipe-desc">把现有蔬菜和豆腐一起煮汤，加少许盐和胡椒粉调味。清淡饱腹，适合减脂期晚餐。也可以打个蛋花进去。</p>
+        ${xhsLink('蔬菜豆腐汤')}
+      </div>`);
+  }
+
+  // 加餐/饮品
+  recipes.push(`
+    <div class="recipe-card">
+      <h4>☕ 今日咖啡推荐 <span class="recipe-meal-label" style="background:rgba(107,114,128,0.15);color:var(--text-muted);">加餐</span></h4>
+      <p class="recipe-desc">推荐：<strong>拿铁</strong>、<strong>卡布奇诺</strong>、<strong>馥芮白</strong>、<strong>燕麦拿铁</strong>。避免美式——你喜欢加奶的，这些都可以！牛奶或燕麦奶都可以，减脂期建议用脱脂奶。</p>
+    </div>`);
+
+  return recipes.join('') + '<p style="font-size:12px;color:var(--text-muted);margin-top:8px;">注：食谱根据你现有食材自动推荐，实际使用时会根据你的食材实时生成更精准的搭配。</p>';
+}
+
+// ========== 意大利语学习 ==========
+function setItalianLevel(level) {
+  saveData('italian_level', level);
+  document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  updateItalianProgress();
+}
+
+function updateItalianProgress() {
+  const history = loadData('italian_history', []);
+  const level = loadData('italian_level', 'beginner');
+  const levelLabels = { beginner: '初级 A1', elementary: '初级 A2', intermediate: '中级 B1' };
+  const totalWords = history.reduce((sum, h) => sum + (h.vocabCount || 0), 0);
+  const totalDays = history.length;
+
+  $('italianProgress').innerHTML = `
+    <div class="progress-stats">
+      <div class="stat-item">当前水平：<strong>${levelLabels[level]}</strong></div>
+      <div class="stat-item">已学习：<strong>${totalDays}</strong> 天</div>
+      <div class="stat-item">累计单词：<strong>${totalWords}</strong> 个</div>
+    </div>
+  `;
+}
+
+function submitItalianSentence(cardId) {
+  const input = $(`it-sentence-${cardId}`);
+  const feedback = $(`it-feedback-${cardId}`);
+  if (!input.value.trim()) return;
+
+  feedback.innerHTML = `<strong>反馈：</strong><br>你写得不错！实际使用时我会根据你的句子给出语法纠正和更地道的表达建议。<br><br><em style="color:var(--text-muted)">（演示反馈 - 会根据你的输入给出针对性建议）</em>`;
+  feedback.style.display = 'block';
+
+  // 记录今日练习
+  const history = loadData('italian_history', []);
+  const todayEntry = history.find(h => h.date === today());
+  if (todayEntry) {
+    todayEntry.practiced = true;
+  } else {
+    history.unshift({ date: today(), vocabCount: 5, practiced: true });
+    if (history.length > 365) history.pop();
+  }
+  saveData('italian_history', history);
+  updateItalianProgress();
+}
+
+function getItalianDemoContent(level) {
+  // 基于最新意大利语口语教材（如 Nuovo Espresso, Nuovo Progetto Italiano）生成内容
+  const lessons = {
+    beginner: [
+      {
+        type: 'grammar',
+        label: '语法',
+        title: 'Essere 的现在时变位',
+        explanation: 'essere（是/在）是意大利语最重要的动词之一。它的现在时变位不规则，需要牢记。',
+        examples: [
+          { it: 'Io sono studente.', zh: '我是学生。' },
+          { it: 'Tu sei molto gentile.', zh: '你很友善。' },
+          { it: 'Lei è di Roma.', zh: '她来自罗马。' },
+          { it: 'Noi siamo a casa.', zh: '我们在家。' },
+          { it: 'Voi siete italiani?', zh: '你们是意大利人吗？' },
+          { it: 'Loro sono felici.', zh: '他们很开心。' }
+        ]
+      },
+      {
+        type: 'vocab',
+        label: '单词',
+        title: '日常问候与自我介绍',
+        words: [
+          { it: 'Ciao', zh: '你好/再见（非正式）', pron: 'chao' },
+          { it: 'Buongiorno', zh: '早上好（正式）', pron: 'bun-jor-no' },
+          { it: 'Buonasera', zh: '晚上好', pron: 'bwo-na-se-ra' },
+          { it: 'Grazie', zh: '谢谢', pron: 'gra-tsye' },
+          { it: 'Prego', zh: '不客气/请', pron: 'pre-go' },
+          { it: 'Scusi', zh: '打扰一下/对不起', pron: 'sku-zi' },
+          { it: 'Mi chiamo...', zh: '我叫...', pron: 'mi kya-mo' },
+          { it: 'Piacere', zh: '很高兴认识你', pron: 'pya-che-re' }
+        ]
+      },
+      {
+        type: 'dialogue',
+        label: '对��',
+        title: '初次见面',
+        lines: [
+          { speaker: 'A', it: 'Ciao! Mi chiamo Marco. Piacere!', zh: '你好！我叫Marco。很高兴认识你！' },
+          { speaker: 'B', it: 'Piacere mio! Io sono Anna. Di dove sei?', zh: '我也是！我叫Anna。你来自哪里？' },
+          { speaker: 'A', it: 'Sono di Cina, ma vivo in Canada. E tu?', zh: '我来自中国，但我住在加拿大。你呢？' },
+          { speaker: 'B', it: 'Io sono di Milano, ma adesso vivo a Victoria.', zh: '我来自米兰，但现在住在维多利亚。' },
+          { speaker: 'A', it: 'Che bello! Parli inglese anche tu?', zh: '真好！你也说英语吗？' },
+          { speaker: 'B', it: 'Sì, e sto imparando il cinese!', zh: '是的，我还在学中文呢！' }
+        ]
+      }
+    ],
+    elementary: [
+      {
+        type: 'grammar',
+        label: '语法',
+        title: 'Passato Prossimo 近过去时',
+        explanation: '意大利语中最常用的过去时态，由助动词（avere/essere）+ 过去分词构成。',
+        examples: [
+          { it: 'Ho mangiato la pizza.', zh: '我吃了披萨。' },
+          { it: 'Sono andato al lavoro.', zh: '我去上班了。' },
+          { it: 'Abbiamo visto un film.', zh: '我们看了一部电影。' },
+          { it: 'Sei stata in Italia?', zh: '你去过意大利吗？' }
+        ]
+      },
+      {
+        type: 'vocab',
+        label: '单词',
+        title: '工作与日常生活',
+        words: [
+          { it: 'il lavoro', zh: '工作', pron: 'la-vo-ro' },
+          { it: 'l\'ufficio', zh: '办公室', pron: 'uf-fi-cho' },
+          { it: 'la riunione', zh: '会议', pron: 'ryu-nyo-ne' },
+          { it: 'il collega', zh: '同事', pron: 'kol-le-ga' },
+          { it: 'stancarsi', zh: '累了', pron: 'stan-kar-si' },
+          { it: 'il weekend', zh: '周末', pron: 'wi-ken' },
+          { it: 'spiegare', zh: '解释', pron: 'spye-ga-re' },
+          { it: 'capire', zh: '理解', pron: 'ka-pi-re' }
+        ]
+      },
+      {
+        type: 'dialogue',
+        label: '对话',
+        title: '在办公室聊天',
+        lines: [
+          { speaker: 'A', it: 'Ciao, come stai? Sei stanca oggi?', zh: '嗨，你好吗？今天看起来很累？' },
+          { speaker: 'B', it: 'Sì, ho avuto una riunione lunghissima stamattina.', zh: '是啊，今天早上开了一个超长的会。' },
+          { speaker: 'A', it: 'Ah, capisco. Hai mangiato qualcosa?', zh: '啊，理解。你吃东西了吗？' },
+          { speaker: 'B', it: 'Non ancora. Andiamo a prendere un caffè?', zh: '还没。我们去喝杯咖啡吧？' },
+          { speaker: 'A', it: 'Ottima idea! Ti va un cappuccino?', zh: '好主意！来杯卡布奇诺？' },
+          { speaker: 'B', it: 'Perfect! Offro io stavolta.', zh: '好极了！这次我请。' }
+        ]
+      }
+    ],
+    intermediate: [
+      {
+        type: 'grammar',
+        label: '语法',
+        title: 'Congiuntivo Presente 虚拟式现在时',
+        explanation: '虚拟式用于表达主观意见、感情、怀疑或可能性。常由 penso che, credo che, spero che 等引导。',
+        examples: [
+          { it: 'Penso che sia una buona idea.', zh: '我觉得这是个好主意。' },
+          { it: 'Spero che tu stia bene.', zh: '希望你一切都好。' },
+          { it: 'Credo che abbiano ragione.', zh: '我相信他们是对的。' },
+          { it: 'È importante che noi parliamo italiano.', zh: '我们说意大利语很重要。' }
+        ]
+      },
+      {
+        type: 'vocab',
+        label: '单词',
+        title: '表达观点与感受',
+        words: [
+          { it: 'secondo me', zh: '在我看来', pron: 'se-con-do me' },
+          { it: 'essere d\'accordo', zh: '同意', pron: 'e-sser dak-kor-do' },
+          { it: 'dubbioso', zh: '怀疑的', pron: 'dub-byo-so' },
+          { it: 'entusiasmarsi', zh: '兴奋', pron: 'en-tu-syas-mar-si' },
+          { it: 'preoccuparsi', zh: '担心', pron: 'pre-ok-kup-par-si' },
+          { it: 'assolutamente', zh: '绝对地', pron: 'as-so-lu-ta-men-te' },
+          { it: 'forse', zh: '也许', pron: 'for-se' },
+          { it: 'invece', zh: '相反/而是', pron: 'in-ve-che' }
+        ]
+      },
+      {
+        type: 'dialogue',
+        label: '对话',
+        title: '讨论旅行计划',
+        lines: [
+          { speaker: 'A', it: 'Ragazzi, secondo voi dovremmo andare in Italia quest\'estate?', zh: '大家觉得我们今年夏天应该去意大利吗？' },
+          { speaker: 'B', it: 'Io credo che sia una fantastica idea! Ma quanto costerebbe?', zh: '我觉得是个超棒的主意！但花费多少？' },
+          { speaker: 'C', it: 'Ho paura che sia troppo caro. Forse dovremmo aspettare.', zh: '我担心太贵了。也许我们该等等。' },
+          { speaker: 'A', it: 'Capisco la tua preoccupazione, ma potremmo risparmiare sui voli.', zh: '我理解你的担心，但我们可以在机票上省钱。' },
+          { speaker: 'B', it: 'Sono d\'accordo! E poi, è sempre il momento giusto per l\'Italia!', zh: '我同意！而且，去意大利永远都是对的时候！' }
+        ]
+      }
+    ]
+  };
+
+  const lessonList = lessons[level] || lessons.beginner;
+  const labelClass = { grammar: 'grammar', vocab: 'vocab', dialogue: 'dialogue' };
+
+  let html = lessonList.map((l, i) => {
+    let contentHtml = '';
+
+    if (l.type === 'grammar') {
+      contentHtml = `
+        <p class="grammar-explanation">${escapeHtml(l.explanation)}</p>
+        <div class="grammar-examples">
+          ${l.examples.map(ex => `<div class="ex-line"><span class="it">${escapeHtml(ex.it)}</span><br><span class="zh">${escapeHtml(ex.zh)}</span></div>`).join('')}
+        </div>
+      `;
+    } else if (l.type === 'vocab') {
+      contentHtml = `
+        <table class="vocab-table">
+          <tr><th>意大利语</th><th>中文</th><th>发音</th><th></th></tr>
+          ${l.words.map(w => `<tr><td class="it-word">${escapeHtml(w.it)}</td><td>${escapeHtml(w.zh)}</td><td style="color:var(--text-muted);">${escapeHtml(w.pron)}</td><td><button class="speak-btn" onclick="speakIt('${escapeHtml(w.it).replace(/'/g, "\\'")}', this)" title="朗读">🔊</button></td></tr>`).join('')}
+        </table>
+      `;
+    } else if (l.type === 'dialogue') {
+      contentHtml = `
+        <div class="dialogue-content">
+          ${l.lines.map(line => `
+            <div class="dialogue-line">
+              <span class="speaker">${escapeHtml(line.speaker)}:</span>
+              <span class="it-text">${escapeHtml(line.it)}</span><br>
+              <span class="zh-text">${escapeHtml(line.zh)}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // 最后一项加造句练习
+    let practiceHtml = '';
+    if (i === lessonList.length - 1) {
+      const todayWords = lessonList.find(l => l.type === 'vocab')?.words.map(w => w.it).slice(0, 4) || [];
+      practiceHtml = `
+        <div class="sentence-practice">
+          <label>✍️ 今日造句练习</label>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">用今天的单词造一个日常句子。比如：<em>${escapeHtml(todayWords[0] || 'Ciao')}...</em></p>
+          <textarea id="it-sentence-${i}" placeholder="Scrivi una frase qui..."></textarea>
+          <button class="btn-improve" onclick="submitItalianSentence(${i})">提交句子</button>
+          <div class="feedback-area" id="it-feedback-${i}" style="display:none;"></div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="italian-card">
+        <span class="card-label ${labelClass[l.type]}">${escapeHtml(l.label)}</span>
+        <h4>${escapeHtml(l.title)}</h4>
+        ${contentHtml}
+        ${practiceHtml}
+      </div>
+    `;
+  }).join('');
+
+  html += `<p style="font-size:12px;color:var(--text-muted);margin-top:8px;">📚 教材参考：Nuovo Espresso / Nuovo Progetto Italiano / Domani 最新意大利语口语教材。实际使用时会根据你的学习进度动态调整内容。</p>`;
+
+  return html;
+}
+
+// ============================================
+// 初始化（本地独立版，无认证、无云端同步）
+// ============================================
+function initApp() {
+  // 渲染所有模块
+  initDemoData();
+  renderTodos('life');
+  renderTodos('work');
+  renderPortfolio();
+  renderSavings();
+  renderSavedResources();
+  renderDreamHistory();
+  renderInspirations();
+  renderDietGoal();
+  renderWeightTrack();
+  renderDietLogs();
+  renderIngredients();
+  updateItalianProgress();
+  renderBooks();
+
+  // 初始化录音组件
+  createRecorderUI('speakingRecorder', 'english-life', (transcript) => {
+    const input = $('speakingInput');
+    input.value = (input.value ? input.value + ' ' : '') + transcript;
+    showToast('语音转写完成，已填入文本框');
+  });
+  createRecorderUI('inspirationRecorder', 'inspirations', (transcript) => {
+    const input = $('randomInput');
+    input.value = (input.value ? input.value + ' ' : '') + transcript;
+    showToast('语音转写完成，已填入文本框');
+  });
+
+  // 初始化 AI 智能输入浮窗
+  SmartInput.init();
+
+  // 加载上次缓存的 AI 内容
+  loadCachedContent();
+
+  // 回车键添加待办
+  $('todoLifeInput').addEventListener('keypress', e => { if (e.key === 'Enter') addTodo('life'); });
+  $('todoWorkInput').addEventListener('keypress', e => { if (e.key === 'Enter') addTodo('work'); });
+  $('ingredientInput').addEventListener('keypress', e => { if (e.key === 'Enter') addIngredient(); });
+}
+
+function loadCachedContent() {
+  const cachedVpea = loadData('vpea_content');
+  if (cachedVpea) {
+    $('vpeaContent').innerHTML = cachedVpea.content;
+    if (cachedVpea.topic) {
+      $('vpeaTopicContent').innerHTML = cachedVpea.topic;
+      $('vpeaTopicSuggestion').style.display = 'block';
+    }
+    $('vpeaLastUpdate').textContent = cachedVpea.date;
+  }
+  const cachedStocks = loadData('stocks_content');
+  if (cachedStocks) {
+    $('stocksNews').innerHTML = cachedStocks.content;
+    $('stocksLastUpdate').textContent = cachedStocks.date;
+  }
+  const cachedEng = loadData('english_work_content');
+  if (cachedEng) {
+    $('englishWorkContent').innerHTML = cachedEng.content;
+    $('englishWorkLastUpdate').textContent = cachedEng.date;
+  }
+  const cachedItalian = loadData('italian_content');
+  if (cachedItalian) {
+    $('italianContent').innerHTML = cachedItalian.content;
+    $('italianLastUpdate').textContent = cachedItalian.date;
+  }
+}
+
+// 日期显示
+$('currentDate').textContent = new Date().toLocaleDateString('zh-CN', {
+  year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+});
+
+// 导航切换
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+    item.classList.add('active');
+    const mod = item.dataset.module;
+    $(mod).classList.add('active');
+  });
+});
+
+// 启动：直接初始化（无需认证）
+initApp();
+</script>
+</body>
+</html>
