@@ -1262,7 +1262,7 @@ input, textarea, [contenteditable] {
   .nav-item span:last-child { display: block !important; font-size: 14px; }
   .sidebar-footer .nav-item { padding: 8px 14px; }
   .sidebar-footer .nav-item span:last-child { display: block !important; font-size: 13px; }
-  .main-content { margin-left: 0; margin-bottom: 0; padding: 16px 14px; padding-top: 64px; }
+  .main-content { margin-left: 0; margin-bottom: 0; padding: 16px 14px; padding-top: calc(44px + env(safe-area-inset-top)); }
   .module { padding-top: 8px; }
   .module-header h2 { font-size: 22px; }
   .savings-item { grid-template-columns: 1fr; gap: 4px; }
@@ -1278,7 +1278,7 @@ input, textarea, [contenteditable] {
 }
 @media (max-width: 375px) {
   .sidebar { width: 260px; }
-  .main-content { padding: 14px 10px; padding-top: 60px; }
+  .main-content { padding: 14px 10px; padding-top: calc(40px + env(safe-area-inset-top)); }
   .module-header h2 { font-size: 20px; }
 }
 /* ---- Toast 通知 ---- */
