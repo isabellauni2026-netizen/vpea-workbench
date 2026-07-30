@@ -3361,14 +3361,32 @@ function importAllData() {
 let _currentAudio = null;
 let _openaiKey = localStorage.getItem('wb_openai_key') || '';
 
-function setOpenAIKey() {
-  const key = prompt('请输入 OpenAI API Key（在 platform.openai.com/api-keys 创建）：\n\n留空则使用浏览器自带语音。\n\nKey 只存在你的浏览器本地，不会上传到任何地方。', _openaiKey);
-  if (key !== null) {
-    _openaiKey = key.trim();
-    localStorage.setItem('wb_openai_key', _openaiKey);
-    showToast(_openaiKey ? '已保存，将使用 OpenAI 自然语音' : '已清除，将使用浏览器自带语音');
+function setAIKey() {
+  const dsKey = localStorage.getItem('wb_deepseek_key') || '';
+  const oaKey = localStorage.getItem('wb_openai_key') || '';
+  const choice = prompt(
+    'AI 设置\n\n1. DeepSeek API Key（英语批改，超便宜，platform.deepseek.com 免费注册）\n2. OpenAI API Key（自然语音朗读，platform.openai.com）\n\n请输入 1 或 2 来设置：',
+    ''
+  );
+  if (!choice) return;
+
+  if (choice === '1') {
+    const key = prompt('请输入 DeepSeek API Key：\n（在 platform.deepseek.com/api_keys 创建，注册送 500 万 token 免费额度）\n\nKey 只存在你的浏览器本地。', dsKey);
+    if (key !== null) {
+      localStorage.setItem('wb_deepseek_key', key.trim());
+      showToast(key.trim() ? '已保存 DeepSeek Key，英语批改将使用 AI' : '已清除 DeepSeek Key');
+    }
+  } else if (choice === '2') {
+    const key = prompt('请输入 OpenAI API Key：\n（在 platform.openai.com/api-keys 创建）\n\n留空则使用浏览器自带语音。', oaKey);
+    if (key !== null) {
+      _openaiKey = key.trim();
+      localStorage.setItem('wb_openai_key', _openaiKey);
+      showToast(_openaiKey ? '已保存 OpenAI Key，将使用自然语音' : '已清除，使用浏览器自带语音');
+    }
   }
 }
+
+function setOpenAIKey() { setAIKey(); } // backward compat
 
 function stopAudio() {
   if (_currentAudio) {
@@ -3738,18 +3756,89 @@ document.querySelectorAll('.el-tab').forEach(tab => {
 });
 
 // ========== 英语学习(工作) Paraphrase ==========
-function submitParaphrase(cardId) {
+async function submitParaphrase(cardId) {
   const input = $(`paraphrase-${cardId}`);
   const feedback = $(`feedback-${cardId}`);
   const text = input.value.trim();
   if (!text) return;
 
-  const analysis = analyzeEnglishText(text);
-  feedback.innerHTML = analysis;
+  feedback.innerHTML = '<div style="padding:12px;color:var(--accent);">🤖 AI analyzing your writing...</div>';
   feedback.style.display = 'block';
+
+  const analysis = await analyzeEnglishText(text);
+  feedback.innerHTML = analysis;
 }
 
-function analyzeEnglishText(text) {
+// ========== DeepSeek AI 英语批改 ==========
+function getDeepSeekKey() { return localStorage.getItem('wb_deepseek_key') || ''; }
+
+async function analyzeEnglishText(text) {
+  const apiKey = getDeepSeekKey();
+  if (apiKey) {
+    try {
+      const aiResult = await callDeepSeek(text, apiKey);
+      if (aiResult) return aiResult;
+    } catch(e) { console.log('DeepSeek unavailable, using local analysis:', e.message); }
+  }
+  return analyzeEnglishTextLocal(text);
+}
+
+async function callDeepSeek(text, apiKey) {
+  const prompt = `You are a professional English writing coach. Analyze the following English text and provide detailed feedback.
+
+Return your response in this exact HTML format:
+
+<h4>📝 Sentence-by-Sentence Feedback</h4>
+[For each sentence with issues, show:]
+<div style="background:var(--bg-input);padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:10px;">
+<p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">Original:</p>
+<p style="margin-bottom:8px;font-style:italic;">[original sentence]</p>
+[For each error:]
+<p style="font-size:13px;margin-bottom:4px;"><span style="color:var(--danger);text-decoration:line-through;">[wrong part]</span> → <span style="color:var(--success);font-weight:600;">[corrected]</span><br><span style="color:var(--text-muted);font-size:11px;">[explanation in English]</span></p>
+[For each unnatural expression:]
+<p style="font-size:13px;margin-bottom:4px;">💬 <span style="color:var(--warning);text-decoration:line-through;">[unnatural phrase]</span> → <span style="color:var(--accent);font-weight:600;">[natural alternative]</span><br><span style="color:var(--text-muted);font-size:11px;">[why this is better]</span></p>
+</div>
+
+<h4>✨ Polished Version</h4>
+<div style="background:var(--success-bg);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:15px;line-height:1.8;">[full polished text]</div>
+
+<h4>💡 Related Natural Expressions</h4>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">[expression 1]</span>
+<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">[expression 2]</span>
+</div>
+
+Rules:
+- Be specific about each error — show what's wrong, the correction, and WHY
+- For unnatural expressions, suggest native-sounding alternatives
+- The polished version should be the full text with ALL corrections applied
+- If the text has no issues, just say "No issues detected — your writing looks natural!"
+- Keep explanations concise but helpful
+
+User's text:
+"""
+${text}
+"""`;
+
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2000,
+      temperature: 0.3
+    })
+  });
+
+  if (!resp.ok) throw new Error(`API error: ${resp.status}`);
+  const data = await resp.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('No response from AI');
+  return '<div style="line-height:1.8;">' + content + '</div>';
+}
+
+function analyzeEnglishTextLocal(text) {
   // 逐句分析，给出具体修改和地道改写
   const sentences = text.split(/(?<=[.!?])\s+/);
   const fixes = [];
@@ -3907,52 +3996,52 @@ function analyzeEnglishText(text) {
 }
 
 // ========== 口语/写作提升 ==========
-function improveSpeaking() {
+async function improveSpeaking() {
   const input = $('speakingInput');
   if (!input.value.trim()) return;
   const btn = document.querySelector('#speaking .btn-improve') || document.querySelector('[onclick*="improveSpeaking"]');
-  if (btn) { btn.disabled = true; btn.textContent = '正在分析...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'AI analyzing...'; }
 
   const original = input.value;
-  setTimeout(() => {
-    const analysis = analyzeEnglishText(original);
-    $('speakingResult').innerHTML = `
-      <div class="improve-result show">
-        <div class="improved-version">
-          ${analysis}
-        </div>
-        <div class="original" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
-          <strong>你的原文：</strong><br>${escapeHtml(original)}
-        </div>
+  $('speakingResult').innerHTML = '<div class="improve-result show"><div class="improved-version"><p style="color:var(--accent);">🤖 AI is analyzing your writing...</p></div></div>';
+
+  const analysis = await analyzeEnglishText(original);
+  $('speakingResult').innerHTML = `
+    <div class="improve-result show">
+      <div class="improved-version">
+        ${analysis}
       </div>
-    `;
-    saveData('speaking_' + today(), { original, analysis });
-    if (btn) { btn.disabled = false; btn.textContent = '帮我提升'; }
-  }, 600);
+      <div class="original" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+        <strong>Your Original:</strong><br>${escapeHtml(original)}
+      </div>
+    </div>
+  `;
+  saveData('speaking_' + today(), { original, analysis });
+  if (btn) { btn.disabled = false; btn.textContent = '帮我提升'; }
 }
 
-function improveWriting() {
+async function improveWriting() {
   const input = $('writingInput');
   if (!input.value.trim()) return;
   const btn = document.querySelector('#writing .btn-improve') || document.querySelector('[onclick*="improveWriting"]');
-  if (btn) { btn.disabled = true; btn.textContent = '正在修改...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'AI analyzing...'; }
 
   const original = input.value;
-  setTimeout(() => {
-    const analysis = analyzeEnglishText(original);
-    $('writingResult').innerHTML = `
-      <div class="improve-result show">
-        <div class="improved-version">
-          ${analysis}
-        </div>
-        <div class="original" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
-          <strong>你的原文：</strong><br>${escapeHtml(original)}
-        </div>
+  $('writingResult').innerHTML = '<div class="improve-result show"><div class="improved-version"><p style="color:var(--accent);">🤖 AI is analyzing your writing...</p></div></div>';
+
+  const analysis = await analyzeEnglishText(original);
+  $('writingResult').innerHTML = `
+    <div class="improve-result show">
+      <div class="improved-version">
+        ${analysis}
       </div>
-    `;
-    saveData('writing_' + today(), { original, analysis });
-    if (btn) { btn.disabled = false; btn.textContent = '修改提升'; }
-  }, 600);
+      <div class="original" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+        <strong>Your Original:</strong><br>${escapeHtml(original)}
+      </div>
+    </div>
+  `;
+  saveData('writing_' + today(), { original, analysis });
+  if (btn) { btn.disabled = false; btn.textContent = '修改提升'; }
 }
 
 // 本地生成的口语提升示例
