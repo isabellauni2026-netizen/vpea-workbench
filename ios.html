@@ -8,9 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="工作台">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="format-detection" content="telephone=no">
-<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230071e3'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>📚</text></svg>">
 <title>VPEA 工作台 · iOS</title>
 <style>
 /* ============================================
@@ -210,7 +207,6 @@ input, textarea, [contenteditable] {
   max-width: 1060px;
 }
 
-/* iOS hamburger + overlay */
 .hamburger-btn {
   display: none;
   position: fixed;
@@ -1033,6 +1029,9 @@ input, textarea, [contenteditable] {
   border-radius: 4px;
   transition: width 0.5s ease;
 }
+.daily-weight-input { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.daily-weight-input input { flex: 1; min-width: 0; }
+.daily-weight-input input[type="date"] { flex: 0 0 130px; }
 .weight-track-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
 .weight-item {
   display: flex;
@@ -1233,7 +1232,6 @@ input, textarea, [contenteditable] {
 .inspiration-item-expand strong { color: var(--purple); }
 
 /* ============ 响应式 ============ */
-/* iPad (≤900px)：缩窄侧边栏仅图标 */
 @media (max-width: 900px) {
   .sidebar { width: 56px; padding: 12px 0; }
   .sidebar-brand { padding: 4px 8px 10px; margin-bottom: 4px; }
@@ -1250,54 +1248,22 @@ input, textarea, [contenteditable] {
   .savings-item { grid-template-columns: 1fr; gap: 4px; }
   .italian-progress .progress-stats { flex-direction: column; gap: 8px; }
 }
-
-/* iPhone (≤430px)：左侧滑出侧边栏 + 汉堡菜单 */
 @media (max-width: 430px) {
   .hamburger-btn { display: flex; }
-
-  .sidebar {
-    width: 280px;
-    height: 100vh;
-    height: 100dvh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: auto;
-    flex-direction: column;
-    border-right: 1px solid var(--sidebar-border);
-    border-top: none;
-    padding: 16px 0;
-    padding-top: 56px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.2);
-    z-index: 99;
-  }
+  .sidebar { width: 280px; height: 100vh; height: 100dvh; position: fixed; top: 0; left: 0; bottom: auto; flex-direction: column; border-right: 1px solid var(--sidebar-border); border-top: none; padding: 16px 0; padding-top: 56px; overflow-y: auto; overflow-x: hidden; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.2); z-index: 99; }
   .sidebar.open { transform: translateX(0); }
   .sidebar-overlay.show { display: block; }
-
   .sidebar-brand { display: block; }
   .sidebar-brand h1, .sidebar-brand .date { display: block; }
   .sidebar-footer { display: block; }
   .nav-group-label { display: block; }
   .sidebar-nav { display: block; padding: 4px 0; }
   .nav-group { display: block; padding: 4px 0; }
-  .nav-item {
-    flex-direction: row;
-    padding: 10px 18px;
-    margin: 1px 8px;
-    border-radius: 8px;
-    font-size: 14px;
-    gap: 10px;
-    min-width: auto;
-    justify-content: flex-start;
-  }
+  .nav-item { flex-direction: row; padding: 10px 18px; margin: 1px 8px; border-radius: 8px; font-size: 14px; gap: 10px; min-width: auto; justify-content: flex-start; }
   .nav-item .icon { font-size: 16px; width: 20px; }
   .nav-item span:last-child { display: block !important; font-size: 14px; }
   .sidebar-footer .nav-item { padding: 8px 14px; }
   .sidebar-footer .nav-item span:last-child { display: block !important; font-size: 13px; }
-
   .main-content { margin-left: 0; margin-bottom: 0; padding: 16px 14px; padding-top: 60px; }
   .module-header h2 { font-size: 22px; }
   .savings-item { grid-template-columns: 1fr; gap: 4px; }
@@ -1305,21 +1271,17 @@ input, textarea, [contenteditable] {
   .stock-input-small { width: 100%; }
   .toast { bottom: 30px; }
   #smartFab { bottom: 24px; right: 16px; }
-
   .books-list { grid-template-columns: 1fr; }
   .add-book-form { grid-template-columns: 1fr; }
   .vocab-input-row { grid-template-columns: 1fr; }
   .card-grid { grid-template-columns: 1fr; }
   .smart-panel { right: 8px; left: 8px; width: auto; bottom: 20px; border-radius: 20px; }
 }
-
-/* iPhone SE (≤375px) */
 @media (max-width: 375px) {
   .sidebar { width: 260px; }
   .main-content { padding: 14px 10px; padding-top: 56px; }
   .module-header h2 { font-size: 20px; }
 }
-
 /* ---- Toast 通知 ---- */
 .toast {
   position: fixed;
@@ -2110,9 +2072,14 @@ input, textarea, [contenteditable] {
           <div id="dietGoalDisplay" class="goal-display"></div>
         </div>
 
-        <!-- 体重记录曲线 -->
+        <!-- 每日体重记录 -->
         <div class="diet-weight-card">
           <h3>体重趋势</h3>
+          <div class="daily-weight-input">
+            <input type="number" id="dailyWeightInput" class="dream-input" step="0.1" placeholder="今日体重 (kg)">
+            <input type="date" id="dailyWeightDate" class="dream-input">
+            <button onclick="addWeightRecord()" class="btn-add" style="white-space:nowrap;">记录体重</button>
+          </div>
           <div id="weightTrackList" class="weight-track-list"></div>
         </div>
       </div>
@@ -4071,16 +4038,16 @@ function refreshModule(module) {
 // ========== 演示内容生成 ==========
 function getVpeaDemoContent() {
   const news = [
-    { tag: '留学', tagClass: 'edu', title: '加拿大统计局发布2026最新社会报告：这3个趋势华人家庭都值得关注', summary: '报告显示加拿大高等教育留学生人数持续增长，其中来自亚洲的留学生占比超过50%。K-12阶段低龄留学需求回升。', source: '加拿大统计局', sourceUrl: 'https://www150.statcan.gc.ca', suggestion: '可写：结合VPEA服务，分析这些趋势对计划留学的中国家庭意味着什么，强调早期规划的重要性。' },
-    { tag: '教育', tagClass: 'edu', title: 'OUAC 2026年度报告｜加拿大大学最新申请数据与趋势全解析', summary: '安省大学申请中心数据显示，国际生申请量回升，商科和计算机科学竞争最激烈。部分学校扩大了早申名额。', source: 'OUAC官网', sourceUrl: 'https://www.ouac.on.ca', suggestion: '可写：给12年级学生的申请时间轴，提醒在某个时间段该做什么。VPEA之前发过类似主题可以做成系列。' },
-    { tag: '签证移民', tagClass: 'visa', title: '加拿大多类移民申请审批提速，最快6个月获批', summary: 'IRCC更新了处理时间，Express Entry部分类别加速。学签审批流程有新变化，SDS通道保持快速。', source: 'IRCC官网', sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship.html', suggestion: '可写：给在读留学生的签证续签提醒，以及毕业后工签(PGWP)申请注意事项。' },
-    { tag: '留学', tagClass: 'edu', title: '2027 QS就业成果排名出炉：加拿大这些高校就业表现反超综合排名', summary: '多伦多大��、滑铁卢大学在就业成果排名中表现突出，部分学校就业率超过其综合排名位置。', source: 'QS Top Universities', sourceUrl: 'https://www.topuniversities.com', suggestion: '可写：专业介绍系列——哪些专业就业率高？结合UVic Continuing Studies的课程设置。' },
-    { tag: '教育', tagClass: 'edu', title: '12年级升学系列｜2026-27加拿大大学申请时间轴', summary: '从9月开学到来年6月，各阶段关键节点提醒，包括OUAC/UBC等系统开放和截止日期。', source: 'VPEA公众号', sourceUrl: 'https://www.jintiankansha.com/column/6jupRG3NEp', suggestion: '可写：把这个时间轴做成图文版，补充UVic的具体申请建议。' },
-    { tag: '留学', tagClass: 'edu', title: 'UBC MBA免GMAT/GRE？还有6万加币奖学金？2027申请通道已开', summary: 'UBC Sauder商学院MBA项目2027申请开放，提供免GMAT选项和高额奖学金。', source: 'UBC Sauder官网', sourceUrl: 'https://www.sauder.ubc.ca', suggestion: '可写：加拿大商学院MBA项目对比系列，也可以介绍UVic Gustavson商学院。' },
-    { tag: '签证移民', tagClass: 'visa', title: 'BC省提名移民(PNP)最新邀请分数公布', summary: 'BC PNP Tech类别继续低分邀请，留学生类别分数线稳定。毕业生移民路径依然通畅。', source: 'BC PNP官网', sourceUrl: 'https://www.welcomebc.ca/Immigrate-to-B-C/Skills-Immigration', suggestion: '可写：留学生毕业后的移民路径全梳理，适合大四学生和刚毕业的校友。' },
-    { tag: '教育', tagClass: 'edu', title: 'SFU两位计算机科学教授获任加拿大人工智能教席', summary: '加拿大AI战略持续加码，SFU在AI研究领域投入加大，对留学生选专业有参考价值。', source: 'SFU官网', sourceUrl: 'https://www.sfu.ca', suggestion: '可写：加拿大AI/计算机科学专业介绍系列，包括UVic的CS项目。' },
-    { tag: '留学', tagClass: 'edu', title: '时薪近$40！加拿大政府招聘2027暑假学生边境服务官', summary: 'CBSA暑期学生项目开放申请，时薪高达$38，适合在校留学生申请，积累加拿大工作经验。', source: '加拿大政府招聘', sourceUrl: 'https://www.canada.ca/en/services/jobs/opportunities/government.html', suggestion: '可写：留学生暑期实习/工作机会汇总，如何申请政府学生岗位。' },
-    { tag: '签证移民', tagClass: 'visa', title: '加拿大更新留学生打工时长政策', summary: '2025年起留学生校外打工时长政策调整，假期可全职工作，学期内有小时限制。', source: 'IRCC官网', sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work.html', suggestion: '可写：留学生打工完全指南，包括SIN申请、税务、工时限制等实用信息。' }
+    { tag: '留学', tagClass: 'edu', title: '加拿大统计局发布2026最新数据：国际学生人数持续增长，中国仍是第二大生源国', summary: '报告显示加拿大高等教育留学生人数突破百万，中国学生占比约15%。本科申请竞争加剧，研究生阶段工科和商科最热门。', source: '加拿大统计局', sourceUrl: 'https://www150.statcan.gc.ca', suggestion: '可写：2027申请季趋势分析——哪些专业竞争最激烈？中国学生如何差异化申请？' },
+    { tag: '申请', tagClass: 'edu', title: 'OUAC 2026年度报告｜安省大学最新申请数据与截止日期全解析', summary: '安省大学申请中心数据显示，国际生申请量持续回升，计算机科学和商科录取线水涨船高。2027秋季入学申请时间轴已更新。', source: 'OUAC官网', sourceUrl: 'https://www.ouac.on.ca', suggestion: '可写：12年级学生完整申请时间轴——从选校到拿到offer每一步该做什么。做成系列文章。' },
+    { tag: '签证', tagClass: 'visa', title: '加拿大学签SDS通道持续快速审批，普签也有提速迹象', summary: 'IRCC最新数据显示SDS学签平均处理时间约4周，普通学签也有改善。资金证明要求和体检注意事项有微调。', source: 'IRCC官网', sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship.html', suggestion: '可写：2027学签申请完全指南——SDS vs 普签怎么选？资金证明怎么准备？体检什么时候做？' },
+    { tag: '选校', tagClass: 'edu', title: '2027 QS世界大学排名出炉：加拿大高校表现稳定，多伦多大学领跑', summary: '多大、麦吉尔、UBC稳居全球前50。滑铁卢大学计算机学科排名上升，阿尔伯塔大学工程类表现亮眼。', source: 'QS Top Universities', sourceUrl: 'https://www.topuniversities.com', suggestion: '可写：加拿大大学优势专业盘点——不只是排名，更要看专业匹配度和就业前景。' },
+    { tag: '申请', tagClass: 'edu', title: '2026-27加拿大大学申请季关键节点：9月到次年6月完整时间轴', summary: '从OUAC开放、早申截止、材料提交、语言成绩递交到录取通知，每个节点的最佳策略。', source: 'VPEA整理', sourceUrl: 'https://www.jintiankansha.com/column/6jupRG3NEp', suggestion: '可写：图文版时间轴，标注每个阶段学生和家长该做什么，配合VPEA服务节点。' },
+    { tag: '留学', tagClass: 'edu', title: 'UBC MBA 2027申请开放：免GMAT选项+高额奖学金，申请策略解读', summary: 'UBC Sauder商学院MBA项目新一季申请开放，提供灵活录取政策和多种奖学金方案，国际生友好。', source: 'UBC Sauder官网', sourceUrl: 'https://www.sauder.ubc.ca', suggestion: '可写：加拿大商学院研究生申请系列——MBA vs 商科硕士怎么选？申请要求和文书技巧。' },
+    { tag: '签证', tagClass: 'visa', title: '加拿大毕业工签(PGWP)最新政策：这些专业毕业后工签更长', summary: 'IRCC更新了PGWP资格要求，STEM专业毕业生可获更长工签。部分私立院校课程不再符合PGWP资格。', source: 'IRCC官网', sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/after-graduation.html', suggestion: '可写：选校时就要考虑PGWP——哪些学校和专业毕业后工签最有保障？给准留学生的避坑指南。' },
+    { tag: '申请', tagClass: 'edu', title: '加拿大大学文书和推荐信怎么写？招生官最看重的3个点', summary: '一篇好的个人陈述能让普通背景脱颖而出。招生官看重：真实故事、清晰动机、与专业的匹配度。', source: 'VPEA经验总结', sourceUrl: 'https://www.jintiankansha.com/column/6jupRG3NEp', suggestion: '可写：文书写作系列——不同专业的文书怎么写？常见错误有哪些？附真实案例解析。' },
+    { tag: '留学', tagClass: 'edu', title: '留学生打工政策更新：学期内每周可工作24小时，假期不限时', summary: '加拿大政府调整留学生校外打工政策，学期内从20小时增加到24小时。SIN申请流程和税务注意事项。', source: 'IRCC官网', sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work.html', suggestion: '可写：留学生打工完全指南——怎么找兼职？SIN怎么申请？打工收入要交��吗？' },
+    { tag: '移民', tagClass: 'visa', title: 'BC省和安省省提名(PNP)最新邀请分数：留学生类别持续利好', summary: 'BC PNP和OINP留学生类别分数线稳定，Tech类别保持低分邀请。毕业后移民路径越来越清晰。', source: '各省PNP官网', sourceUrl: 'https://www.welcomebc.ca/Immigrate-to-B-C/Skills-Immigration', suggestion: '可写：留学生毕业后移民路径全梳理——PGWP→工作经验→PNP/EE，每一步怎么走？' }
   ];
 
   return news.map(n => `
@@ -4093,6 +4060,153 @@ function getVpeaDemoContent() {
   `).join('');
 }
 
+function getStocksDemoContent() {
+  const stocks = getStocks();
+  if (stocks.length === 0) {
+    return `<div class="news-card"><p class="news-summary">请先添加你的持仓股票，然后点击「今日分析」获取基于你持仓的走势分析和买卖建议。</p></div>`;
+  }
+
+  const symbols = stocks.map(s => s.symbol).join('、');
+  const stockList = stocks.map(s => {
+    const trend = s.marketPrice > s.costPrice ? '📈 上涨' : s.marketPrice < s.costPrice ? '📉 下跌' : '➡️ 持平';
+    const change = s.costPrice > 0 ? ((s.marketPrice - s.costPrice) / s.costPrice * 100).toFixed(2) : 0;
+    const changeSign = change >= 0 ? '+' : '';
+    return `<tr><td><strong>${escapeHtml(s.symbol)}</strong></td><td>$${s.costPrice.toFixed(2)}</td><td>$${s.marketPrice.toFixed(2)}</td><td style="color:${change>=0?'var(--success)':'var(--danger)'}">${changeSign}${change}%</td><td>${trend}</td></tr>`;
+  }).join('');
+
+  const advice = stocks.map(s => {
+    if (s.marketPrice > s.costPrice * 1.1) return `${s.symbol}：涨幅较大，可考虑部分止盈，锁定利润`;
+    if (s.marketPrice < s.costPrice * 0.9) return `${s.symbol}：跌幅较大，关注是否破位，考虑止损或逢低补仓`;
+    if (s.marketPrice > s.costPrice) return `${s.symbol}：温和上涨，趋势良好，建议继续持有`;
+    return `${s.symbol}：短期承压，观望为主，关注支撑位`;
+  });
+
+  return `
+    <div class="news-card">
+      <h4>📊 持仓概览</h4>
+      <p class="news-summary">当前持仓：${symbols}，共 ${stocks.length} 只股票</p>
+      <table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:8px;">
+        <thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:4px;">代码</th><th style="text-align:left;padding:4px;">成本价</th><th style="text-align:left;padding:4px;">市场价</th><th style="text-align:left;padding:4px;">涨跌</th><th style="text-align:left;padding:4px;">趋势</th></tr></thead>
+        <tbody>${stockList}</tbody>
+      </table>
+    </div>
+    <div class="news-card">
+      <h4>🔍 走势分析</h4>
+      <p class="news-summary">
+        基于你当前的持仓分析：<br>
+        ${stocks.map(s => `• <strong>${escapeHtml(s.symbol)}</strong>：成本 $${s.costPrice.toFixed(2)} → 市场 $${s.marketPrice.toFixed(2)}，${s.marketPrice >= s.costPrice ? '处于盈利区间' : '目前浮亏中'}。${s.pnlNote ? '你的备注：' + escapeHtml(s.pnlNote) : ''}`).join('<br>')}
+      </p>
+      <div class="news-source">分析时间：${now()}</div>
+    </div>
+    <div class="news-card">
+      <h4>💡 操作建议</h4>
+      <p class="news-summary">
+        ${advice.map(a => `• ${a}`).join('<br>')}
+      </p>
+      <div class="inspiration-suggestion"><strong>⚠️ 免责声明：</strong>以上分析仅供参考，不构成投资建议。股市有风险，投资需谨慎。请根据自身情况做出独立判断。</div>
+    </div>
+    <div class="news-card">
+      <h4>🌐 市场参考</h4>
+      <p class="news-summary">建议关注以下信息来源获取最新行情：</p>
+      <div class="news-source">
+        <a href="https://finance.yahoo.com" target="_blank" rel="noopener">Yahoo Finance ↗</a> · 
+        <a href="https://www.marketwatch.com" target="_blank" rel="noopener">MarketWatch ↗</a> · 
+        <a href="https://www.cnbc.com" target="_blank" rel="noopener">CNBC ↗</a> · 
+        <a href="https://www.bloomberg.com" target="_blank" rel="noopener">Bloomberg ↗</a>
+      </div>
+    </div>
+  `;
+}
+
+function getEnglishWorkDemoContent() {
+  const lessons = [
+    {
+      title: 'Small Talk: New Colleague Onboarding',
+      source: 'Harvard Business Review',
+      sourceUrl: 'https://hbr.org',
+      vocab: ['onboarding', 'icebreaker', 'ramp-up period', 'touch base', 'shadowing'],
+      en: 'Welcome to the team! During your first week, we\'ll have you shadow a few team members to get familiar with our workflows. Don\'t hesitate to ask questions — the ramp-up period is meant for learning. Let\'s touch base every Friday to see how you\'re settling in.',
+      zh: '欢迎加入团队！在你的第一周，我们会安排你跟随几位团队成员熟悉工作流程。有问题随时问——适应期就是用来学习的。我们每周五碰一下，看看你适应得怎么样。',
+      highlight: 'Let\'s <span class="highlight-sentence">touch base</span> every Friday to see how you\'re <span class="highlight-sentence">settling in</span>.'
+    },
+    {
+      title: 'Meeting Expressions: Program Updates',
+      source: 'UVic Continuing Studies',
+      sourceUrl: 'https://www.uvic.ca/continuing-studies',
+      vocab: ['recruitment pipeline', 'conversion rate', 'stakeholder', 'deliverables', 'action item'],
+      en: 'To recap our recruitment pipeline for the Fall intake: we\'re seeing a 15% increase in inquiries but conversion rate has dipped slightly. Our main deliverable this quarter is to streamline the application process for international students.',
+      zh: '回顾一下秋季招生的进展：咨询量增加了15%，但转化率略有下降。我们这个季度的主要任务是简化国际学生的申请流程。',
+      highlight: 'conversion rate has <span class="highlight-sentence">dipped slightly</span>'
+    },
+    {
+      title: 'Communicating with Students: Program Info',
+      source: 'NAFSA Association',
+      sourceUrl: 'https://www.nafsa.org',
+      vocab: ['prerequisites', 'tuition deposit', 'enrollment', 'deadline', 'waiver'],
+      en: 'The program has specific prerequisites you\'ll need to meet before enrollment. Your tuition deposit is due by the deadline stated in your offer letter. If you need a prerequisite waiver, you can submit a request with your transcripts.',
+      zh: '这个项目有特定的先修课程要求，注册前需要满足。学费押金需要在录取通知书上注明的截止日期前缴纳。如果需要申请先修课程豁免，可以连同成绩单一起提交申请。',
+      highlight: 'Your <span class="highlight-sentence">tuition deposit</span> is due by the <span class="highlight-sentence">deadline</span>'
+    }
+  ];
+
+  return lessons.map((l, i) => `
+    <div class="english-card">
+      <h4>${l.title}</h4>
+      <div class="news-source">来源：${l.sourceUrl ? `<a href="${l.sourceUrl}" target="_blank" rel="noopener">${l.source} ↗</a>` : l.source}</div>
+      <div class="vocab-list">
+        ${l.vocab.map((v, vi) => `<span class="vocab-tag">${v}<button class="speak-btn" onclick="speak('${v.replace(/'/g, "\\'")}', this)" title="朗读">🔊</button></span>`).join('')}
+      </div>
+      <div class="bilingual">
+        <div class="en">${l.en}<button class="speak-paragraph" onclick="speak(\`${l.en.replace(/`/g, '\\`').replace(/'/g, "\\'")}\`, this)" title="朗读整段">🔊 朗读</button></div>
+        <div class="zh">${l.zh}</div>
+      </div>
+      <p style="font-size:13px;margin:8px 0;">高亮表达：${l.highlight}</p>
+      <div class="paraphrase-area">
+        <label>✍️ 你的 Paraphrase（用自己的话总结）</label>
+        <textarea class="paraphrase-input" id="paraphrase-${i}" placeholder="Write your own summary here..."></textarea>
+        <button class="btn-improve" style="margin-top:8px;" onclick="submitParaphrase(${i})">提交并获取反馈</button>
+        <div class="feedback-area" id="feedback-${i}" style="display:none;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== VPEA 今日主题建议 ==========
+function getVpeaTopicSuggestion() {
+  return `
+    <div class="topic-block">
+      <h4 style="font-size:17px;color:var(--text-primary);margin-bottom:10px;">🎯 今日推荐主题：<em>2027加拿大大学申请全攻略——从选校到签证一篇说清</em></h4>
+      <p>正值申请季准备期，家长和学生最关心「怎么选校」「什么时候开始准备」「签证怎么办」。这篇文章可以把VPEA的核心服务串起来，做成一篇高收藏量的指南型文章。</p>
+      <p style="font-size:13px;color:var(--accent);margin-bottom:6px;"><strong>📋 建议大纲：</strong></p>
+      <div class="outline-item">开篇：2027申请季，现在就该准备了</div>
+      <div class="outline-item">第一章：选校策略——排名、专业、城市怎么权衡</div>
+      <div class="outline-item">第二章：申请时间轴——每个月该做什么</div>
+      <div class="outline-item">第三章：文书和推荐信——招生官到底想看什么</div>
+      <div class="outline-item">第四章：拿到offer之后——学签、住宿、行前准备</div>
+      <div class="outline-item">结尾：VPEA如何帮你——从规划到落地全程陪伴</div>
+    </div>
+    <div class="topic-block">
+      <h4 style="font-size:15px;color:var(--text-primary);margin-bottom:8px;">📌 备选主题：<em>加拿大留学生打工完全指南</em></h4>
+      <p>打工政策更新后搜索量大。适合做成实用工具文，配合VPEA的留学生服务。</p>
+      <p style="font-size:13px;color:var(--accent);margin-bottom:6px;"><strong>📋 建议大纲：</strong></p>
+      <div class="outline-item">最新打工时长政策（学期内24小时/周，假期不限）</div>
+      <div class="outline-item">SIN卡申请全流程图文教程</div>
+      <div class="outline-item">留学生税务基础知识</div>
+      <div class="outline-item">高薪学生岗位推荐</div>
+      <div class="outline-item">打工与学习平衡建议</div>
+    </div>
+    <div class="topic-block">
+      <h4 style="font-size:15px;color:var(--text-primary);margin-bottom:8px;">📌 备选主题：<em>加拿大大学文书怎么写？招生官最看重的3个点</em></h4>
+      <p>文书是申请中最能拉开差距的环节。VPEA有丰富的文书辅导经验，可以做成案例解析型文章。</p>
+      <p style="font-size:13px;color:var(--accent);margin-bottom:6px;"><strong>📋 建议大纲：</strong></p>
+      <div class="outline-item">招生官看文书时最在意的3个维度</div>
+      <div class="outline-item">常见错误：套模板、空话、没有个人特色</div>
+      <div class="outline-item">真实案例：好文书 vs 差文书的对比</div>
+      <div class="outline-item">不同专业的文书侧重点（商科/工科/文科）</div>
+      <div class="outline-item">VPEA文书辅导如何帮你脱颖而出</div>
+    </div>
+  `;
+}
 function getStocksDemoContent() {
   const stocks = getStocks();
   if (stocks.length === 0) {
@@ -4446,6 +4560,34 @@ function renderWeightTrack() {
     }
     return `<div class="weight-item"><span>${escapeHtml(w.date)}</span><span><strong>${w.weight} kg</strong> ${changeStr}</span></div>`;
   }).join('');
+}
+
+function addWeightRecord() {
+  const weightInput = $('dailyWeightInput');
+  const dateInput = $('dailyWeightDate');
+  const weight = parseFloat(weightInput.value);
+  if (!weight || weight <= 0) {
+    showToast('请输入有效体重');
+    return;
+  }
+  const recordDate = dateInput.value || today();
+
+  const data = getDietData();
+  const existingIdx = data.weights.findIndex(w => w.date === recordDate);
+  if (existingIdx >= 0) {
+    data.weights[existingIdx].weight = weight;
+  } else {
+    data.weights.unshift({ date: recordDate, weight });
+    data.weights.sort((a, b) => b.date.localeCompare(a.date));
+    if (data.weights.length > 90) data.weights.pop();
+  }
+
+  saveDietData(data);
+  weightInput.value = '';
+  dateInput.value = '';
+  renderDietGoal();
+  renderWeightTrack();
+  showToast('体重记录已保存');
 }
 
 function addDietLog() {
@@ -4863,9 +5005,6 @@ function getItalianDemoContent(level) {
   return html;
 }
 
-// ============================================
-// iOS 侧边栏控制
-// ============================================
 function toggleSidebar() {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebarOverlay');
