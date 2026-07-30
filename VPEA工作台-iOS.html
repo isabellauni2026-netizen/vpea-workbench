@@ -1797,6 +1797,12 @@ input, textarea, [contenteditable] {
       </div>
     </nav>
     <div class="sidebar-footer">
+      <a href="#" class="nav-item" onclick="exportAllData();return false;">
+        <span class="icon">📤</span><span>导出数据</span>
+      </a>
+      <a href="#" class="nav-item" onclick="importAllData();return false;">
+        <span class="icon">📥</span><span>导入数据</span>
+      </a>
       <a href="#" class="nav-item" onclick="setOpenAIKey();return false;">
         <span class="icon">🔑</span><span>语音设置</span>
       </a>
@@ -3296,6 +3302,55 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// ========== 数据导入/导出 ==========
+function exportAllData() {
+  const keys = ['workbench_todos_life', 'workbench_todos_work', 'workbench_vpea', 'workbench_stocks',
+    'workbench_savings', 'workbench_english_work', 'workbench_english_life', 'workbench_dream',
+    'workbench_inspiration', 'workbench_diet', 'workbench_italian', 'workbench_reading',
+    'workbench_openai_key', 'workbench_cache', 'workbench_english_resources'];
+  const exportObj = {};
+  for (const key of keys) {
+    const val = localStorage.getItem(key);
+    if (val) exportObj[key] = val;
+  }
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const ts = new Date().toISOString().slice(0, 10);
+  a.download = `工作台备份_${ts}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据已导出');
+}
+
+function importAllData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        let count = 0;
+        for (const [key, val] of Object.entries(data)) {
+          localStorage.setItem(key, val);
+          count++;
+        }
+        showToast(`已导入 ${count} 项数据，刷新后生效`);
+        setTimeout(() => location.reload(), 800);
+      } catch (err) {
+        showToast('文件格式错误，请选择正确的备份文件');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 // ========== 语音朗读（OpenAI TTS 优先 + Web Speech 兜底） ==========
