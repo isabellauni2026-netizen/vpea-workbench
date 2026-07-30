@@ -3787,36 +3787,52 @@ async function analyzeEnglishText(text) {
 }
 
 async function callDeepSeek(text, apiKey) {
-  const prompt = `You are a professional English writing coach. Analyze the user's text and give feedback in this EXACT HTML format. Do NOT use markdown code blocks.
+  const prompt = `You are a professional English writing coach. Analyze the user's text and give detailed comparison feedback. Do NOT use markdown code blocks.
 
-CRITICAL: For EACH sentence with errors, show:
-1. The original sentence (in red italic)
-2. Each error: wrong → correct (with arrow)
-3. The FULL corrected sentence (in green bold)
+FORMAT:
 
-<h4>📝 Sentence-by-Sentence Feedback</h4>
-<div style="background:var(--bg-input);padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:10px;">
-<p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">Original:</p>
-<p style="margin-bottom:6px;font-style:italic;color:var(--danger);">[original sentence with errors]</p>
-<p style="font-size:13px;margin-bottom:4px;"><span style="color:var(--danger);text-decoration:line-through;">wrong word</span> → <span style="color:var(--success);font-weight:600;">correct word</span></p>
-<p style="font-size:13px;margin-bottom:6px;">✅ <strong style="color:var(--success);">[full corrected sentence]</strong></p>
-<p style="color:var(--text-muted);font-size:11px;">[explanation]</p>
+<h4>📝 Detailed Comparison</h4>
+
+[For each sentence, show:]
+
+<div style="background:var(--bg-input);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:10px;">
+
+<p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">🔴 Your Original:</p>
+<p style="margin-bottom:6px;font-style:italic;color:var(--danger);">[the user's exact original sentence]</p>
+
+<p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">🟢 Improved Version:</p>
+<p style="margin-bottom:6px;font-weight:600;color:var(--success);">[your improved version of the sentence]</p>
+
+<p style="font-size:13px;margin-bottom:6px;">📌 What changed & why:</p>
+<ul style="padding-left:18px;font-size:13px;color:var(--text-secondary);margin-bottom:6px;">
+<li><span style="color:var(--danger);text-decoration:line-through;">user's phrase</span> → <span style="color:var(--success);font-weight:600;">improved phrase</span> — [why this is better]</li>
+<li>...</li>
+</ul>
+
+<p style="font-size:13px;margin-bottom:4px;">💬 Can you say it your way? <span style="color:var(--warning);">[Yes, it's understandable / No, it sounds unnatural because... / It's okay but...]</span></p>
+
 </div>
 
-<h4>✨ Polished Version (all corrections applied)</h4>
-<div style="background:var(--success-bg);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:15px;line-height:1.8;">[the entire text with all corrections]</div>
+<h4>✨ Full Polished Version</h4>
+<div style="background:var(--success-bg);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:15px;line-height:1.8;">[the entire text rewritten naturally]</div>
 
-<h4>💡 Key Vocabulary & Expressions</h4>
+<h4>💡 Natural Expressions & Collocations</h4>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Here are native-level expressions related to this topic:</p>
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
 <span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">expression 1</span>
-<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">expression 2</span>
+...
 </div>
 
+<p style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;"><strong>Try using these in similar contexts:</strong> [2-3 example sentences showing how to use the expressions naturally]</p>
+
 RULES:
-- ALWAYS show BOTH the original sentence AND the full corrected sentence
-- If no errors found, output: <p style="color:var(--success);">✓ No issues detected — your writing looks natural!</p>
-- Use the EXACT HTML tags above
-- Keep explanations brief
+- ALWAYS show user's original AND your improved version for each sentence
+- Tell the user whether their original expression is acceptable or sounds unnatural
+- For each change, explain WHAT changed and WHY
+- Include at least 3-5 natural collocations/expressions related to the topic
+- Show example sentences using the recommended expressions
+- If the writing is perfect, praise it and suggest one way to elevate it further
+- Be encouraging but honest
 
 User's text:
 """
