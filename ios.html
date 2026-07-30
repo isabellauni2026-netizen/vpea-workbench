@@ -3756,29 +3756,29 @@ function analyzeEnglishText(text) {
   let polished = '';
 
   const rules = [
-    { re: /\bi\b/g, fix: 'I', tip: 'I（我）永远大写，不论在句子什么位置' },
-    { re: /\bdont\b/g, fix: "don't", tip: "don't 需要撇号" },
-    { re: /\bcant\b/g, fix: "can't", tip: "can't 需要撇号" },
-    { re: /\bwont\b/g, fix: "won't", tip: "won't 需要撇号" },
-    { re: /\bisnt\b/g, fix: "isn't", tip: "isn't 需要撇号" },
-    { re: /\bdidnt\b/g, fix: "didn't", tip: "didn't 需要撇号" },
-    { re: /\bim\b/gi, fix: "I'm", tip: "I'm 需要撇号和大写 I" },
-    { re: /\bive\b/gi, fix: "I've", tip: "I've 需要撇号和大写 I" },
-    { re: /\bthier\b/gi, fix: 'their', tip: '拼写错误：their（他们的），不是 thier' },
-    { re: /\brecieve\b/gi, fix: 'receive', tip: '拼写：receive，i before e except after c' },
-    { re: /\bI very like\b/gi, fix: 'I really like', tip: 'very 不修饰动词。想表达"很喜欢"用 really / absolutely love / I\'m really into' },
-    { re: /\bplay phone\b/gi, fix: 'use my phone', tip: '"玩手机"地道说法是 use my phone / scroll through my phone / check my phone' },
-    { re: /\blearn knowledge\b/gi, fix: 'gain knowledge', tip: 'learn 直接接学的内容（learn English），不跟 knowledge 搭配' },
-    { re: /\bin the weekend\b/gi, fix: 'on the weekend', tip: '介词：美式 on the weekend，英式 at the weekend' },
-    { re: /\blook forward to see\b/gi, fix: 'look forward to seeing', tip: '这里的 to 是介词，后面必须用 doing 形式' },
-    { re: /\bmake a meeting\b/gi, fix: 'schedule a meeting', tip: '"安排会议"用 schedule / set up / arrange a meeting' },
-    { re: /\bI want to\b/gi, fix: "I'd like to", tip: "I'd like to 比 I want to 更礼貌、更常用" },
-    { re: /\bI think\b/gi, fix: "I believe", tip: '书面语中 I believe / In my view 比 I think 更正式' },
-    { re: /\ba lot of\b/gi, fix: 'plenty of', tip: 'plenty of 比 a lot of 更自然，书面更推荐' },
-    { re: /\bgood\b/gi, fix: 'great', tip: 'good 太泛，试试 great / excellent / wonderful 更具体' },
-    { re: /\bbad\b/gi, fix: 'terrible', tip: 'bad 太泛，试试 terrible / awful / poor 更准确' },
-    { re: /\bvery\b/gi, fix: 'really', tip: '口语中 really 比 very 更自然；书面可换 extremely / quite' },
-    { re: /\bget\b/gi, fix: 'get', tip: '' }, // just mark, don't change
+    { re: /\bi\b/g, fix: 'I', tip: 'The pronoun "I" must always be capitalized' },
+    { re: /\bdont\b/g, fix: "don't", tip: 'Missing apostrophe: use "don\'t"' },
+    { re: /\bcant\b/g, fix: "can't", tip: 'Missing apostrophe: use "can\'t"' },
+    { re: /\bwont\b/g, fix: "won't", tip: 'Missing apostrophe: use "won\'t"' },
+    { re: /\bisnt\b/g, fix: "isn't", tip: 'Missing apostrophe: use "isn\'t"' },
+    { re: /\bdidnt\b/g, fix: "didn't", tip: 'Missing apostrophe: use "didn\'t"' },
+    { re: /\bim\b/gi, fix: "I'm", tip: "Missing apostrophe + lowercase i: use \"I'm\"" },
+    { re: /\bive\b/gi, fix: "I've", tip: "Missing apostrophe + lowercase i: use \"I've\"" },
+    { re: /\bthier\b/gi, fix: 'their', tip: 'Spelling: "their" (possessive), not "thier"' },
+    { re: /\brecieve\b/gi, fix: 'receive', tip: 'Spelling: "receive" — i before e except after c' },
+    { re: /\bI very like\b/gi, fix: 'I really like', tip: 'We don\'t use "very" to modify verbs. Use "really like" / "absolutely love" / "I\'m really into"' },
+    { re: /\bplay phone\b/gi, fix: 'use my phone', tip: '"Play phone" is Chinglish. Natural: "use my phone" / "scroll through my phone" / "check my phone"' },
+    { re: /\blearn knowledge\b/gi, fix: 'gain knowledge', tip: '"Learn knowledge" is not natural. Say "gain knowledge" or just "learn" + the subject' },
+    { re: /\bin the weekend\b/gi, fix: 'on the weekend', tip: 'Preposition: "on the weekend" (US) / "at the weekend" (UK)' },
+    { re: /\blook forward to see\b/gi, fix: 'look forward to seeing', tip: 'The "to" here is a preposition — must be followed by -ing form' },
+    { re: /\bmake a meeting\b/gi, fix: 'schedule a meeting', tip: 'Use "schedule / set up / arrange a meeting" — not "make"' },
+    { re: /\bI want to\b/gi, fix: "I'd like to", tip: '"I\'d like to" is more polite and natural than "I want to"' },
+    { re: /\bI think\b/gi, fix: "I believe", tip: '"I believe" / "In my view" sounds more polished than "I think" in writing' },
+    { re: /\ba lot of\b/gi, fix: 'plenty of', tip: '"Plenty of" sounds more natural than "a lot of" in writing' },
+    { re: /\bgood\b/gi, fix: 'great', tip: '"Good" is vague. Try "great" / "excellent" / "wonderful" for more impact' },
+    { re: /\bbad\b/gi, fix: 'terrible', tip: '"Bad" is vague. Try "terrible" / "awful" / "poor" to be more precise' },
+    { re: /\bvery\b/gi, fix: 'really', tip: '"Really" sounds more conversational than "very". In writing: "extremely" / "quite"' },
+    { re: /\bget\b/gi, fix: 'get', tip: '' },
   ];
 
   sentences.forEach(s => {
@@ -3800,26 +3800,26 @@ function analyzeEnglishText(text) {
     // 地道化改写
     let improved = fixed;
     const upgrades = [
-      { from: /\bget up\b/gi, to: 'wake up', note: 'wake up 更常用，get up 强调从床上起来' },
-      { from: /\bgo to work\b/gi, to: 'head to work', note: 'head to 更口语化' },
-      { from: /\bhave a good time\b/gi, to: 'have a great time', note: 'great 比 good 更生动' },
-      { from: /\bI am happy\b/gi, to: "I'm thrilled", note: 'thrilled 比 happy 更有感情色彩' },
-      { from: /\bI am sad\b/gi, to: "I'm feeling down", note: 'feeling down 比 sad 更口语化' },
-      { from: /\bI am tired\b/gi, to: "I'm exhausted", note: 'exhausted 比 tired 更有力度' },
-      { from: /\bI am busy\b/gi, to: "I'm swamped", note: 'swamped 是"忙得不可开交"的地道说法' },
-      { from: /\bgo home\b/gi, to: 'head home', note: 'head home 更口语自然' },
-      { from: /\bI don't know\b/gi, to: "I'm not sure", note: "I'm not sure 比 I don't know 更礼貌" },
-      { from: /\bI don't understand\b/gi, to: "I'm not following", note: "更口语化的表达" },
-      { from: /\bI agree\b/gi, to: "I'm on board with that", note: "更地道的表达" },
-      { from: /\bcan you\b/gi, to: 'could you', note: 'could you 比 can you 更礼貌' },
-      { from: /\bI will\b/gi, to: "I'll", note: '口语中多用缩写' },
-      { from: /\bdo not\b/gi, to: "don't", note: '口语中多用缩写' },
-      { from: /\bis not\b/gi, to: "isn't", note: '口语中多用缩写' },
-      { from: /\bare not\b/gi, to: "aren't", note: '口语中多用缩写' },
-      { from: /\bhave not\b/gi, to: "haven't", note: '口语中多用缩写' },
-      { from: /\bhas not\b/gi, to: "hasn't", note: '口语中多用缩写' },
-      { from: /\bcan not\b/gi, to: "can't", note: '口语中多用缩写' },
-      { from: /\bwill not\b/gi, to: "won't", note: '口语中多用缩写' },
+      { from: /\bget up\b/gi, to: 'wake up', note: '"Wake up" is more common; "get up" emphasizes getting out of bed' },
+      { from: /\bgo to work\b/gi, to: 'head to work', note: '"Head to" is more conversational' },
+      { from: /\bhave a good time\b/gi, to: 'have a great time', note: '"Great" is more vivid than "good"' },
+      { from: /\bI am happy\b/gi, to: "I'm thrilled", note: '"Thrilled" carries more emotion than "happy"' },
+      { from: /\bI am sad\b/gi, to: "I'm feeling down", note: '"Feeling down" is more natural in conversation' },
+      { from: /\bI am tired\b/gi, to: "I'm exhausted", note: '"Exhausted" is stronger and more expressive than "tired"' },
+      { from: /\bI am busy\b/gi, to: "I'm swamped", note: '"Swamped" is a native way to say "extremely busy"' },
+      { from: /\bgo home\b/gi, to: 'head home', note: '"Head home" sounds more natural' },
+      { from: /\bI don't know\b/gi, to: "I'm not sure", note: '"I\'m not sure" is more polite than "I don\'t know"' },
+      { from: /\bI don't understand\b/gi, to: "I'm not following", note: 'More conversational way to express confusion' },
+      { from: /\bI agree\b/gi, to: "I'm on board with that", note: 'A more natural, idiomatic way to agree' },
+      { from: /\bcan you\b/gi, to: 'could you', note: '"Could you" is more polite than "can you"' },
+      { from: /\bI will\b/gi, to: "I'll", note: 'Use contractions in conversation for natural flow' },
+      { from: /\bdo not\b/gi, to: "don't", note: 'Use contractions in conversation' },
+      { from: /\bis not\b/gi, to: "isn't", note: 'Use contractions in conversation' },
+      { from: /\bare not\b/gi, to: "aren't", note: 'Use contractions in conversation' },
+      { from: /\bhave not\b/gi, to: "haven't", note: 'Use contractions in conversation' },
+      { from: /\bhas not\b/gi, to: "hasn't", note: 'Use contractions in conversation' },
+      { from: /\bcan not\b/gi, to: "can't", note: 'Use contractions in conversation' },
+      { from: /\bwill not\b/gi, to: "won't", note: 'Use contractions in conversation' },
     ];
 
     const upgradeNotes = [];
@@ -3865,11 +3865,11 @@ function analyzeEnglishText(text) {
   // 逐句分析
   const hasIssues = fixes.some(f => f.sentenceFixes.length > 0 || f.upgradeNotes.length > 0);
   if (hasIssues) {
-    html += '<h4 style="margin-bottom:10px;">📝 逐句修改建议</h4>';
+    html += '<h4 style="margin-bottom:10px;">📝 Sentence-by-Sentence Feedback</h4>';
     fixes.forEach((f, i) => {
       if (f.sentenceFixes.length === 0 && f.upgradeNotes.length === 0) return;
       html += `<div style="background:var(--bg-input);padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:10px;">`;
-      html += `<p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">原文：</p>`;
+      html += `<p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">Original:</p>`;
       html += `<p style="margin-bottom:8px;font-style:italic;">${escapeHtml(f.original)}</p>`;
 
       f.sentenceFixes.forEach(sf => {
@@ -3885,12 +3885,12 @@ function analyzeEnglishText(text) {
   }
 
   // 润色后全文
-  html += '<h4 style="margin:14px 0 8px;">✨ 润色后全文</h4>';
+  html += '<h4 style="margin:14px 0 8px;">✨ Polished Version</h4>';
   html += `<div style="background:var(--success-bg);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:15px;line-height:1.8;">${escapeHtml(polished)}</div>`;
 
   // 高频搭配
   if (matchedCollocations.length > 0) {
-    html += '<h4 style="margin:12px 0 8px;">💡 相关高频搭配</h4>';
+    html += '<h4 style="margin:12px 0 8px;">💡 Related Natural Expressions</h4>';
     html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">';
     [...new Set(matchedCollocations)].slice(0, 8).forEach(p => {
       html += `<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">${escapeHtml(p)}</span>`;
@@ -3899,7 +3899,7 @@ function analyzeEnglishText(text) {
   }
 
   if (!hasIssues) {
-    html += '<p style="color:var(--success);margin-bottom:8px;">✓ 未检测到常见问题，整体表达流畅！</p>';
+    html += '<p style="color:var(--success);margin-bottom:8px;">✓ No issues detected — your writing looks natural!</p>';
   }
 
   html += '</div>';
