@@ -3741,11 +3741,140 @@ document.querySelectorAll('.el-tab').forEach(tab => {
 function submitParaphrase(cardId) {
   const input = $(`paraphrase-${cardId}`);
   const feedback = $(`feedback-${cardId}`);
-  if (!input.value.trim()) return;
+  const text = input.value.trim();
+  if (!text) return;
 
-  // 预设反馈示例（本地版）
-  feedback.innerHTML = `<strong>语法建议：</strong><br>你写得不错！这里有几个小建议：<br>1. 注意时态一致性<br>2. 可以尝试用更地道的表达<br><br><em style="color:var(--text-muted)">注：当前为演示反馈。实际使用时，我会在你提交后给出针对性的语法修改建议。</em>`;
+  const analysis = analyzeEnglishText(text);
+  feedback.innerHTML = analysis;
   feedback.style.display = 'block';
+}
+
+function analyzeEnglishText(text) {
+  // 本地化语法与表达分析器
+  const issues = [];
+  let corrected = text;
+
+  // 常见语法错误规则
+  const rules = [
+    { pattern: /\bi\b/g, wrong: 'i', correct: 'I', type: '大小写', explain: '句子开头的 I 必须大写' },
+    { pattern: /\bdont\b/g, wrong: 'dont', correct: "don't", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\bcant\b/g, wrong: 'cant', correct: "can't", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\bwont\b/g, wrong: 'wont', correct: "won't", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\bisnt\b/g, wrong: 'isnt', correct: "isn't", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\barent\b/g, wrong: 'arent', correct: "aren't", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\bdidnt\b/g, wrong: 'didnt', correct: "didn't", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\bim\b/gi, wrong: 'im', correct: "I'm", type: '缩写', explain: '缺少撇号和大写' },
+    { pattern: /\bive\b/gi, wrong: 'ive', correct: "I've", type: '缩写', explain: '缺少撇号和大写' },
+    { pattern: /\bshes\b/gi, wrong: 'shes', correct: "she's", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\bhes\b/gi, wrong: 'hes', correct: "he's", type: '缩写', explain: '缺少撇号' },
+    { pattern: /\bthier\b/gi, wrong: 'thier', correct: 'their', type: '拼写', explain: 'their 和 there/they’re 不同' },
+    { pattern: /\brecieve\b/gi, wrong: 'recieve', correct: 'receive', type: '拼写', explain: 'ei 顺序错误' },
+    { pattern: /\bteh\b/gi, wrong: 'teh', correct: 'the', type: '拼写', explain: '字母顺序错误' },
+    { pattern: /\bthere going to\b/gi, wrong: 'there going to', correct: "they're going to", type: '易混词', explain: 'there 是那里，they're 才是 they are 的缩写' },
+    { pattern: /\bits a\b/gi, wrong: 'its a', correct: "it's a", type: '易混词', explain: "its 是'它的'，it's 才是 it is" },
+    { pattern: /\b alot of \b/gi, wrong: 'a lot of', correct: 'plenty of / lots of', type: '表达', explain: 'a lot of 口语可用，书面可换更自然的 plenty of/lots of' },
+    { pattern: /\bvery good\b/gi, wrong: 'very good', correct: 'excellent / outstanding / impressive', type: '词汇升级', explain: 'very good 太泛，可根据语境具体化' },
+    { pattern: /\bvery bad\b/gi, wrong: 'very bad', correct: 'terrible / awful / unacceptable', type: '词汇升级', explain: '用更具体的形容词替代 very bad' },
+    { pattern: /\bI think\b/gi, wrong: 'I think', correct: "I believe / I'd say / From my perspective", type: '表达升级', explain: '口语表达，学术或工作场景可用更正式的表达' },
+    { pattern: /\bI want to\b/gi, wrong: 'I want to', correct: "I'd like to / I hope to / I'm looking to", type: '语气升级', explain: 'want to 直接，可换更委婉或正式的说法' },
+    { pattern: /\bget up\b/gi, wrong: 'get up', correct: 'wake up', type: '搭配', explain: '起床更常用 wake up，get up 强调起身动作' },
+    { pattern: /\bgo to work\b/gi, wrong: 'go to work', correct: 'head to work / commute to work', type: '搭配', explain: 'head to 更地道，commute 指通勤' },
+    { pattern: /\bmake a meeting\b/gi, wrong: 'make a meeting', correct: 'schedule a meeting / set up a meeting', type: '搭配', explain: '英文中'安排会议'用 schedule 或 set up' },
+    { pattern: /\bhave a good time\b/gi, wrong: 'have a good time', correct: 'have a blast / enjoy yourself', type: '习语', explain: 'have a good time 太普通，可换更生动的表达' },
+    { pattern: /\bhelp me to\b/gi, wrong: 'help me to', correct: 'help me with', type: '介词', explain: 'help sb with sth 是固定搭配' },
+    { pattern: /\bin the weekend\b/gi, wrong: 'in the weekend', correct: 'at the weekend / on the weekend', type: '介词', explain: '英式用 at the weekend，美式用 on the weekend' },
+    { pattern: /\blook forward to see\b/gi, wrong: 'look forward to see', correct: 'look forward to seeing', type: '语法', explain: 'to 在这里是介词，后面接动名词 seeing' },
+  ];
+
+  rules.forEach(rule => {
+    if (rule.pattern.test(text)) {
+      issues.push(rule);
+      corrected = corrected.replace(rule.pattern, rule.correct);
+    }
+  });
+
+  // 检测中式英语/不自然表达
+  const chinglish = [
+    { pattern: /\bI very like\b/gi, better: "I really like / I'm really into", note: '英文不用 very 修饰动词 like' },
+    { pattern: /\bpeople mountain people sea\b/gi, better: "packed / crowded / swarming with people", note: '中式直译，地道表达是 crowded/packed' },
+    { pattern: /\bgive you some color to see see\b/gi, better: "teach you a lesson / show you", note: '中式英语' },
+    { pattern: /\bI have a rest\b/gi, better: "I'm taking a break / I need some rest", note: 'have a rest 在英语里不自然' },
+    { pattern: /\bplay phone\b/gi, better: "scroll through my phone / use my phone", note: '玩手机用 use/scroll/check my phone' },
+    { pattern: /\bmy English is poor\b/gi, better: "I'm still working on my English / My English isn't very strong", note: 'poor 太直接，不礼貌' },
+    { pattern: /\bhow to say\b/gi, better: "how do I put this / what's the word", note: 'how to say 不是完整句子' },
+    { pattern: /\blearn knowledge\b/gi, better: "gain/acquire knowledge / learn something", note: 'learn 直接接内容，不与 knowledge 搭配' },
+    { pattern: /\bopen the phone\b/gi, better: "turn on/unlock the phone", note: '开手机用 turn on/unlock' },
+    { pattern: /\btake a photo for me\b/gi, better: "take a photo of me", note: '给我拍照是 take a photo of me' },
+  ];
+
+  const chinglishIssues = [];
+  chinglish.forEach(item => {
+    if (item.pattern.test(text)) {
+      chinglishIssues.push(item);
+      // 只标出，不自动替换全部（避免过度改写）
+    }
+  });
+
+  // 高频搭配推荐（根据关键词）
+  const collocations = [
+    { keywords: ['meeting'], pairs: ['schedule a meeting', 'call a meeting', 'wrap up a meeting', 'follow up after a meeting'] },
+    { keywords: ['deadline'], pairs: ['meet a deadline', 'miss a deadline', 'tight deadline', 'looming deadline'] },
+    { keywords: ['job', 'work'], pairs: ['land a job', 'quit a job', 'take on a project', 'pull your weight', 'get down to business'] },
+    { keywords: ['study', 'learn'], pairs: ['brush up on', 'get the hang of', 'learn the ropes', 'stay on top of'] },
+    { keywords: ['problem'], pairs: ['solve a problem', 'address an issue', 'get to the bottom of', 'work around'] },
+    { keywords: ['agree'], pairs: ['see eye to eye', 'come to an agreement', 'on the same page'] },
+    { keywords: ['busy'], pairs: ['swamped', 'tied up', 'back-to-back meetings', 'a packed schedule'] },
+    { keywords: ['tired'], pairs: ['burned out', 'worn out', 'exhausted', 'drained'] },
+    { keywords: ['happy'], pairs: ['thrilled', 'delighted', 'over the moon', 'couldn\'t be happier'] },
+  ];
+
+  const matchedCollocations = [];
+  collocations.forEach(group => {
+    if (group.keywords.some(k => text.toLowerCase().includes(k))) {
+      matchedCollocations.push(...group.pairs);
+    }
+  });
+
+  let html = '<div style="line-height:1.7;">';
+
+  if (issues.length === 0 && chinglishIssues.length === 0) {
+    html += '<p style="color:var(--success);margin-bottom:10px;">✓ 未检测到常见语法问题，整体表达不错！</p>';
+  } else {
+    html += '<h4 style="color:var(--success);margin-bottom:10px;">📝 具体修改建议</h4>';
+    if (issues.length > 0) {
+      html += '<ul style="margin-bottom:12px;padding-left:18px;">';
+      issues.forEach(r => {
+        html += `<li style="margin-bottom:8px;"><strong style="color:var(--danger)">${escapeHtml(r.wrong)}</strong> → <strong style="color:var(--success)">${escapeHtml(r.correct)}</strong><br><span style="color:var(--text-muted);font-size:12px;">${r.type}：${r.explain}</span></li>`;
+      });
+      html += '</ul>';
+    }
+    if (chinglishIssues.length > 0) {
+      html += '<h4 style="color:var(--warning);margin:12px 0 8px;">🚩 中式/不自然表达</h4><ul style="margin-bottom:12px;padding-left:18px;">';
+      chinglishIssues.forEach(c => {
+        html += `<li style="margin-bottom:8px;">建议改为：<strong>${escapeHtml(c.better)}</strong><br><span style="color:var(--text-muted);font-size:12px;">${c.note}</span></li>`;
+      });
+      html += '</ul>';
+    }
+  }
+
+  // 改写版本
+  if (corrected !== text || chinglishIssues.length > 0) {
+    html += '<h4 style="margin:12px 0 8px;">✨ 润色版本</h4>';
+    html += `<div style="background:var(--bg-input);padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:12px;">${escapeHtml(corrected)}</div>`;
+  }
+
+  // 地道表达推荐
+  if (matchedCollocations.length > 0) {
+    html += '<h4 style="margin:12px 0 8px;">💡 相关高频搭配</h4>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    [...new Set(matchedCollocations)].slice(0, 8).forEach(p => {
+      html += `<span style="background:var(--accent-bg);color:var(--accent);padding:4px 10px;border-radius:20px;font-size:12px;">${escapeHtml(p)}</span>`;
+    });
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
 }
 
 // ========== 口语/写作提升（本地演示版） ==========
@@ -3753,26 +3882,24 @@ function improveSpeaking() {
   const input = $('speakingInput');
   if (!input.value.trim()) return;
   const btn = document.querySelector('#speaking .btn-improve') || document.querySelector('[onclick*="improveSpeaking"]');
-  if (btn) { btn.disabled = true; btn.textContent = '正在生成提升版本...'; }
+  if (btn) { btn.disabled = true; btn.textContent = '正在分析...'; }
 
   const original = input.value;
   setTimeout(() => {
-    const improved = generateSpeakingImprovement(original);
-    const notes = '基于语法和表达习惯给出以下建议：1. 注意时态一致性 2. 尝试用更地道的短语 3. 适当丰富句式结构。';
+    const analysis = analyzeEnglishText(original);
     $('speakingResult').innerHTML = `
       <div class="improve-result show">
         <div class="improved-version">
-          <strong>提升版本：</strong><br><br>${escapeHtml(improved)}
-          <br><br><strong>修改说明：</strong>${escapeHtml(notes)}
+          ${analysis}
         </div>
-        <div class="original">
+        <div class="original" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
           <strong>你的原文：</strong><br>${escapeHtml(original)}
         </div>
       </div>
     `;
-    saveData('speaking_' + today(), { original, improved });
+    saveData('speaking_' + today(), { original, analysis });
     if (btn) { btn.disabled = false; btn.textContent = '帮我提升'; }
-  }, 800);
+  }, 600);
 }
 
 function improveWriting() {
@@ -3783,22 +3910,20 @@ function improveWriting() {
 
   const original = input.value;
   setTimeout(() => {
-    const improved = generateWritingImprovement(original);
-    const notes = '修改要点：1. 修正语法错误 2. 优化用词 3. 调整句式使表达更自然。';
+    const analysis = analyzeEnglishText(original);
     $('writingResult').innerHTML = `
       <div class="improve-result show">
         <div class="improved-version">
-          <strong>修改后版本：</strong><br><br>${escapeHtml(improved)}
-          <br><br><strong>修改说明：</strong>${escapeHtml(notes)}
+          ${analysis}
         </div>
-        <div class="original">
-          <strong>原文：</strong><br>${escapeHtml(original)}
+        <div class="original" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+          <strong>你的原文：</strong><br>${escapeHtml(original)}
         </div>
       </div>
     `;
-    saveData('writing_' + today(), { original, improved });
+    saveData('writing_' + today(), { original, analysis });
     if (btn) { btn.disabled = false; btn.textContent = '修改提升'; }
-  }, 800);
+  }, 600);
 }
 
 // 本地生成的口语提升示例
