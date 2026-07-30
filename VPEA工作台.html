@@ -3784,36 +3784,36 @@ async function analyzeEnglishText(text) {
 }
 
 async function callDeepSeek(text, apiKey) {
-  const prompt = `You are a professional English writing coach. Analyze the following English text and provide detailed feedback.
+  const prompt = `You are a professional English writing coach. Analyze the user's text and give feedback in this EXACT HTML format. Do NOT use markdown code blocks.
 
-Return your response in this exact HTML format:
+CRITICAL: For EACH sentence with errors, show:
+1. The original sentence (in red italic)
+2. Each error: wrong → correct (with arrow)
+3. The FULL corrected sentence (in green bold)
 
 <h4>📝 Sentence-by-Sentence Feedback</h4>
-[For each sentence with issues, show:]
 <div style="background:var(--bg-input);padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:10px;">
 <p style="color:var(--text-muted);font-size:12px;margin-bottom:4px;">Original:</p>
-<p style="margin-bottom:8px;font-style:italic;">[original sentence]</p>
-[For each error:]
-<p style="font-size:13px;margin-bottom:4px;"><span style="color:var(--danger);text-decoration:line-through;">[wrong part]</span> → <span style="color:var(--success);font-weight:600;">[corrected]</span><br><span style="color:var(--text-muted);font-size:11px;">[explanation in English]</span></p>
-[For each unnatural expression:]
-<p style="font-size:13px;margin-bottom:4px;">💬 <span style="color:var(--warning);text-decoration:line-through;">[unnatural phrase]</span> → <span style="color:var(--accent);font-weight:600;">[natural alternative]</span><br><span style="color:var(--text-muted);font-size:11px;">[why this is better]</span></p>
+<p style="margin-bottom:6px;font-style:italic;color:var(--danger);">[original sentence with errors]</p>
+<p style="font-size:13px;margin-bottom:4px;"><span style="color:var(--danger);text-decoration:line-through;">wrong word</span> → <span style="color:var(--success);font-weight:600;">correct word</span></p>
+<p style="font-size:13px;margin-bottom:6px;">✅ <strong style="color:var(--success);">[full corrected sentence]</strong></p>
+<p style="color:var(--text-muted);font-size:11px;">[explanation]</p>
 </div>
 
-<h4>✨ Polished Version</h4>
-<div style="background:var(--success-bg);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:15px;line-height:1.8;">[full polished text]</div>
+<h4>✨ Polished Version (all corrections applied)</h4>
+<div style="background:var(--success-bg);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:15px;line-height:1.8;">[the entire text with all corrections]</div>
 
-<h4>💡 Related Natural Expressions</h4>
+<h4>💡 Key Vocabulary & Expressions</h4>
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">[expression 1]</span>
-<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">[expression 2]</span>
+<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">expression 1</span>
+<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">expression 2</span>
 </div>
 
-Rules:
-- Be specific about each error — show what's wrong, the correction, and WHY
-- For unnatural expressions, suggest native-sounding alternatives
-- The polished version should be the full text with ALL corrections applied
-- If the text has no issues, just say "No issues detected — your writing looks natural!"
-- Keep explanations concise but helpful
+RULES:
+- ALWAYS show BOTH the original sentence AND the full corrected sentence
+- If no errors found, output: <p style="color:var(--success);">✓ No issues detected — your writing looks natural!</p>
+- Use the EXACT HTML tags above
+- Keep explanations brief
 
 User's text:
 """
