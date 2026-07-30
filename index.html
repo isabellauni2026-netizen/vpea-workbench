@@ -3857,6 +3857,72 @@ ${text}
   return '<div style="line-height:1.8;">' + content + '</div>';
 }
 
+async function generateEnglishWorkWithAI(apiKey) {
+  const prompt = `Create 3 short English learning materials for a Chinese professional working in Canada's education/study-abroad industry. Each material should be about workplace English: meetings, emails, student counseling, campus life, admissions, Canadian education news, etc.
+
+Generate the response as a JavaScript array of 3 objects. Each object must have these fields (use EXACT field names):
+
+{
+  title: "short descriptive title",
+  source: "topic source (e.g., Inside Higher Ed, UVic, Canadian Bureau for International Education)",
+  sourceUrl: "https://relevant-source-url.com",
+  vocab: ["word1", "word2", "word3", "word4", "word5"],
+  en: "A paragraph of 2-3 English sentences related to the topic. Make it authentic workplace English.",
+  zh: "中文翻译，2-3句",
+  highlight: "One key phrase from the English text, wrapped in HTML: <span class='highlight-sentence'>key phrase</span>"
+}
+
+IMPORTANT:
+- Return ONLY the JSON array, no other text
+- Make sure the English is natural, native-level workplace English
+- The Chinese translation should be accurate
+- Choose vocabulary words that are actually useful for a workplace context
+- Source URLs should be real, relevant websites (even if the article is fictional)
+- Vary the topics across the 3 materials`;
+
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 3000,
+      temperature: 0.8
+    })
+  });
+
+  if (!resp.ok) throw new Error(`API error: ${resp.status}`);
+  const data = await resp.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('No response');
+
+  // Extract JSON from response (may have markdown wrapping)
+  const jsonMatch = content.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) throw new Error('No JSON found in response');
+  const lessons = JSON.parse(jsonMatch[0]);
+
+  return lessons.map((l, i) => `
+    <div class="english-card">
+      <h4>${escapeHtml(l.title)}</h4>
+      <div class="news-source">来源：${l.sourceUrl ? `<a href="${l.sourceUrl}" target="_blank" rel="noopener">${l.source} ↗</a>` : l.source}</div>
+      <div class="vocab-list">
+        ${l.vocab.map(v => `<span class="vocab-tag">${escapeHtml(v)}<button class="speak-btn" onclick="speak('${v.replace(/'/g, "\\'")}', this)" title="朗读">🔊</button></span>`).join('')}
+      </div>
+      <div class="bilingual">
+        <div class="en">${escapeHtml(l.en)}<button class="speak-paragraph" onclick="speak(\`${l.en.replace(/`/g, '\\`').replace(/'/g, "\\'")}\`, this)" title="朗读整段">🔊 朗读</button></div>
+        <div class="zh">${escapeHtml(l.zh)}</div>
+      </div>
+      <p style="font-size:13px;margin:8px 0;">高亮表达：${l.highlight}</p>
+      <div class="paraphrase-area">
+        <label>✍️ 你的 Paraphrase（用自己的话总结）</label>
+        <textarea class="paraphrase-input" id="paraphrase-${i}" placeholder="Write your own summary here..."></textarea>
+        <button class="btn-improve" style="margin-top:8px;" onclick="submitParaphrase(${i})">提交并获取反馈</button>
+        <div class="feedback-area" id="feedback-${i}" style="display:none;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
 function analyzeEnglishTextLocal(text) {
   // 逐句分析，给出具体修改和地道改写
   const sentences = text.split(/(?<=[.!?])\s+/);
@@ -4275,7 +4341,7 @@ function renderInspirations() {
 }
 
 // ========== AI 内容刷新（本地版，setTimeout + 演示数据） ==========
-function refreshModule(module) {
+async function refreshModule(module) {
   const btn = event.target;
   btn.disabled = true;
 
@@ -4310,17 +4376,31 @@ function refreshModule(module) {
     }, 1000);
 
   } else if (module === 'english-work') {
-    btn.textContent = '正在准备学习材料...';
-    $('englishWorkContent').innerHTML = '<div class="loading-placeholder">正在搜集工作英语材料...</div>';
-
-    setTimeout(() => {
-      const html = getEnglishWorkDemoContent();
-      $('englishWorkContent').innerHTML = html;
-      $('englishWorkLastUpdate').textContent = now();
-      saveData('english_work_content', { content: html, date: now() });
-      btn.disabled = false;
-      btn.textContent = '今日学习材料';
-    }, 1000);
+    const apiKey = getDeepSeekKey();
+    if (apiKey) {
+      btn.textContent = 'AI 正在生成新材料...';
+      $('englishWorkContent').innerHTML = '<div class="loading-placeholder">🤖 DeepSeek AI 正在为你生成全新学习材料...</div>';
+      try {
+        const content = await generateEnglishWorkWithAI(apiKey);
+        $('englishWorkContent').innerHTML = content;
+        $('englishWorkLastUpdate').textContent = now();
+        saveData('english_work_content', { content, date: now() });
+      } catch(e) {
+        $('englishWorkContent').innerHTML = '<div class="loading-placeholder">AI 生成失败，请稍后重试</div>';
+      }
+    } else {
+      // fallback to local demo
+      btn.textContent = '正在准备学习材料...';
+      $('englishWorkContent').innerHTML = '<div class="loading-placeholder">正在搜集工作英语材料...</div>';
+      setTimeout(() => {
+        const html = getEnglishWorkDemoContent();
+        $('englishWorkContent').innerHTML = html;
+        $('englishWorkLastUpdate').textContent = now();
+        saveData('english_work_content', { content: html, date: now() });
+      }, 500);
+    }
+    btn.disabled = false;
+    btn.textContent = '今日学习材料';
 
   } else if (module === 'todo-life' || module === 'todo-work') {
     btn.textContent = '处理中...';
