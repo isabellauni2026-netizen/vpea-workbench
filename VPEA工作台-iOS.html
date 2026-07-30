@@ -3745,19 +3745,17 @@ function submitParaphrase(cardId) {
 
   // 预设反馈示例（本地版）
   feedback.innerHTML = `<strong>语法建议：</strong><br>你写得不错！这里有几个小建议：<br>1. 注意时态一致性<br>2. 可以尝试用更地道的表达<br><br><em style="color:var(--text-muted)">注：当前为演示反馈。实际使用时，我会在你提交后给出针对性的语法修改建议。</em>`;
-  feedback.classList.add('show');
+  feedback.style.display = 'block';
 }
 
 // ========== 口语/写作提升（本地演示版） ==========
 function improveSpeaking() {
   const input = $('speakingInput');
   if (!input.value.trim()) return;
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '正在生成提升版本...';
+  const btn = document.querySelector('#speaking .btn-improve') || document.querySelector('[onclick*="improveSpeaking"]');
+  if (btn) { btn.disabled = true; btn.textContent = '正在生成提升版本...'; }
 
   const original = input.value;
-  // 模拟思考延迟
   setTimeout(() => {
     const improved = generateSpeakingImprovement(original);
     const notes = '基于语法和表达习惯给出以下建议：1. 注意时态一致性 2. 尝试用更地道的短语 3. 适当丰富句式结构。';
@@ -3773,17 +3771,15 @@ function improveSpeaking() {
       </div>
     `;
     saveData('speaking_' + today(), { original, improved });
-    btn.disabled = false;
-    btn.textContent = '帮我提升';
+    if (btn) { btn.disabled = false; btn.textContent = '帮我提升'; }
   }, 800);
 }
 
 function improveWriting() {
   const input = $('writingInput');
   if (!input.value.trim()) return;
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '正在修改...';
+  const btn = document.querySelector('#writing .btn-improve') || document.querySelector('[onclick*="improveWriting"]');
+  if (btn) { btn.disabled = true; btn.textContent = '正在修改...'; }
 
   const original = input.value;
   setTimeout(() => {
@@ -3801,8 +3797,7 @@ function improveWriting() {
       </div>
     `;
     saveData('writing_' + today(), { original, improved });
-    btn.disabled = false;
-    btn.textContent = '修改提升';
+    if (btn) { btn.disabled = false; btn.textContent = '修改提升'; }
   }, 800);
 }
 
