@@ -1819,7 +1819,7 @@ input, textarea, [contenteditable] {
     <section id="todo-life" class="module active">
       <div class="module-header">
         <h2>生活待办清单</h2>
-        <button class="btn-refresh" onclick="refreshModule('todo-life')">刷新灵感</button>
+        <button class="btn-refresh" onclick="refreshModule('todo-life', event)">刷新灵感</button>
       </div>
       <div class="todo-input-area">
         <input type="text" id="todoLifeInput" placeholder="添加待办事项..." class="todo-input">
@@ -1833,7 +1833,7 @@ input, textarea, [contenteditable] {
     <section id="todo-work" class="module">
       <div class="module-header">
         <h2>工作待办清单</h2>
-        <button class="btn-refresh" onclick="refreshModule('todo-work')">刷新灵感</button>
+        <button class="btn-refresh" onclick="refreshModule('todo-work', event)">刷新灵感</button>
       </div>
       <div class="todo-input-area">
         <input type="text" id="todoWorkInput" placeholder="添加工作待办..." class="todo-input">
@@ -1848,7 +1848,7 @@ input, textarea, [contenteditable] {
     <section id="vpea-inspiration" class="module">
       <div class="module-header">
         <h2>VPEA 公众号文章灵感</h2>
-        <button class="btn-refresh" onclick="refreshModule('vpea-inspiration')">今日更新</button>
+        <button class="btn-refresh" onclick="refreshModule('vpea-inspiration', event)">今日更新</button>
       </div>
       <div class="inspiration-meta">
         <span class="last-update">最后更新：<span id="vpeaLastUpdate">-</span></span>
@@ -1867,7 +1867,7 @@ input, textarea, [contenteditable] {
     <section id="stocks" class="module">
       <div class="module-header">
         <h2>股票追踪</h2>
-        <button class="btn-refresh" onclick="refreshModule('stocks')">今日分析</button>
+        <button class="btn-refresh" onclick="refreshModule('stocks', event)">今日分析</button>
       </div>
       <div class="inspiration-meta">
         <span class="last-update">最后更新：<span id="stocksLastUpdate">-</span></span>
@@ -1944,7 +1944,7 @@ input, textarea, [contenteditable] {
     <section id="english-work" class="module">
       <div class="module-header">
         <h2>英语学习（工作）</h2>
-        <button class="btn-refresh" onclick="refreshModule('english-work')">今日学习材料</button>
+        <button class="btn-refresh" onclick="refreshModule('english-work', event)">今日学习材料</button>
       </div>
       <div class="inspiration-meta">
         <span class="last-update">最后更新：<span id="englishWorkLastUpdate">-</span></span>
@@ -1954,7 +1954,7 @@ input, textarea, [contenteditable] {
         <div class="loading-placeholder">点击「今日学习材料」获取学习内容</div>
       </div>
       <div style="text-align:center;padding:16px 0 8px;">
-        <button class="btn-refresh" onclick="refreshModule('english-work')" style="background:var(--bg-input);color:var(--accent);border:1px solid var(--accent);">🔄 换一批学习材料</button>
+        <button class="btn-refresh" onclick="refreshModule('english-work', event)" style="background:var(--bg-input);color:var(--accent);border:1px solid var(--accent);">🔄 换一批学习材料</button>
       </div>
     </section>
 
@@ -2129,7 +2129,7 @@ input, textarea, [contenteditable] {
     <section id="italian" class="module">
       <div class="module-header">
         <h2>意大利语学习</h2>
-        <button class="btn-refresh" onclick="refreshModule('italian')">今日课程</button>
+        <button class="btn-refresh" onclick="refreshModule('italian', event)">今日课程</button>
       </div>
       <div class="inspiration-meta">
         <span class="last-update">最后更新：<span id="italianLastUpdate">-</span></span>
@@ -4341,8 +4341,9 @@ function renderInspirations() {
 }
 
 // ========== AI 内容刷新（本地版，setTimeout + 演示数据） ==========
-async function refreshModule(module) {
-  const btn = event.target;
+async function refreshModule(module, e) {
+  const btn = e ? e.target : document.querySelector(`[onclick*="refreshModule('${module}', event)"]`);
+  if (!btn) return;
   btn.disabled = true;
 
   if (module === 'vpea-inspiration') {
