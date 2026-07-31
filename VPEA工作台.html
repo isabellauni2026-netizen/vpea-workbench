@@ -4233,14 +4233,26 @@ function generateWritingImprovement(original) {
 }
 
 // ========== 资料处理 ==========
-function processResource() {
+async function processResource() {
   const file = $('resourceFile').files[0];
   const action = $('resourceAction').value;
   if (!file) return;
 
   const result = $('resourceResult');
   if (action === 'bilingual') {
-    result.innerHTML = `<div class="saved-resource-item"><strong>正在生成双语文章...</strong><br><em style="color:var(--text-muted)">本地模式下暂不支持 AI 双语生成。实际使用时，我会读取你上传的文档，生成中英双语版本。</em></div>`;
+    const apiKey = getDeepSeekKey();
+    if (!apiKey) {
+      result.innerHTML = `<div class="saved-resource-item"><strong>需要设置 AI Key</strong><br><em style="color:var(--text-muted)">点击左侧栏底部 🔑 AI设置，输入 DeepSeek Key 即可使用 AI 双语生成。</em></div>`;
+      return;
+    }
+    result.innerHTML = '<div class="saved-resource-item">🤖 AI 正在读取文件并生成双语文章...</div>';
+    try {
+      const text = await file.text();
+      const bilingual = await generateBilingualWithAI(apiKey, text.slice(0, 8000), file.name);
+      result.innerHTML = bilingual;
+    } catch(e) {
+      result.innerHTML = `<div class="saved-resource-item" style="color:var(--danger);">生成失败：${escapeHtml(e.message)}</div>`;
+    }
   } else {
     const resources = loadData('saved_resources', []);
     resources.push({ name: file.name, date: now(), size: file.size });
@@ -4248,6 +4260,50 @@ function processResource() {
     renderSavedResources();
     result.innerHTML = `<div class="saved-resource-item" style="color:var(--success);">✓ 已保存：${escapeHtml(file.name)}</div>`;
   }
+}
+
+async function generateBilingualWithAI(apiKey, text, filename) {
+  const prompt = `You are a bilingual translator and editor. Take the following document and create a bilingual (English + Chinese) learning article from it.
+
+Return in HTML format:
+<div style="line-height:1.8;">
+<h4 style="margin-bottom:8px;">📄 ${escapeHtml(filename)} — 双语文章</h4>
+<div class="bilingual" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+<div class="en" style="padding:10px;background:var(--bg-input);border-radius:var(--radius-sm);">
+<strong style="color:var(--accent);">English Version</strong>
+<p style="margin-top:8px;">[Summarize/translate the key content into natural English, 2-4 paragraphs]</p>
+</div>
+<div class="zh" style="padding:10px;background:var(--bg-input);border-radius:var(--radius-sm);">
+<strong style="color:var(--accent);">中文版本</strong>
+<p style="margin-top:8px;">[对应的中文版本，2-4段]</p>
+</div>
+</div>
+<h4 style="margin:12px 0 8px;">📝 Key Vocabulary</h4>
+<div style="display:flex;flex-wrap:wrap;gap:8px;">
+<span style="background:var(--accent-bg);color:var(--accent);padding:5px 12px;border-radius:20px;font-size:12px;">word 1</span>
+...
+</div>
+</div>
+
+Document text:
+"""
+${text}
+"""`;
+
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 3000,
+      temperature: 0.5
+    })
+  });
+
+  if (!resp.ok) throw new Error(`API error: ${resp.status}`);
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || 'No response';
 }
 
 function renderSavedResources() {
