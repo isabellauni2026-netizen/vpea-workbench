@@ -3923,6 +3923,64 @@ IMPORTANT:
   `).join('');
 }
 
+async function generateVpeaWithAI(apiKey) {
+  const today = new Date().toISOString().slice(0, 10);
+  const prompt = `You are a content strategist for VPEA, a Canadian study-abroad agency targeting Chinese students and parents. Generate fresh content for ${today}.
+
+Return a JSON object with TWO fields:
+
+1. "articles": An array of 6-8 news/article summaries. Each summary is a string in this HTML format:
+   <div class="inspiration-item"><span class="item-number">N</span><div class="item-content"><strong>TITLE</strong><p>2-3 sentence summary in Chinese about the topic</p><p style="font-size:12px;color:var(--text-muted);">来源：<a href="REAL_URL" target="_blank" rel="noopener">SOURCE_NAME ↗</a></p></div></div>
+
+2. "topic": A string containing 3 article topic suggestions for VPEA's WeChat account, in this HTML format:
+   <div class="topic-block"><h4 style="font-size:17px;">🎯 今日推荐主题：TOPIC_TITLE</h4><p>Why this topic works for VPEA's audience</p><p style="font-size:13px;color:var(--accent);"><strong>📋 建议大纲：</strong></p><div class="outline-item">Point 1</div><div class="outline-item">Point 2</div><div class="outline-item">Point 3</div><div class="outline-item">Point 4</div><div class="outline-item">Point 5</div></div>
+
+TOPICS TO COVER for articles:
+- Latest Canadian university admission news & policy changes
+- Study permit / visa updates for international students  
+- Popular majors & career outlook for Chinese students
+- Canadian education system explanations for parents
+- International student life, housing, part-time work in Canada
+- Trending education topics on Chinese social media
+
+ARTICLE SUGGESTION TOPICS:
+- One featured topic + 2 backup topics
+- Should be actionable, shareable WeChat article ideas
+- Focus on practical advice for students & parents
+
+RULES:
+- Use REAL, verifiable source URLs (e.g., canada.ca, cic.gc.ca, university websites, CBC, The Globe and Mail, etc.)
+- Write in Chinese (Simplified)
+- Make it timely — reference current events where possible
+- Return ONLY the JSON object, no markdown wrapping`;
+
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 4000,
+      temperature: 0.8
+    })
+  });
+
+  if (!resp.ok) throw new Error(`API error: ${resp.status}`);
+  const data = await resp.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('No response');
+
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON found');
+  const result = JSON.parse(jsonMatch[0]);
+
+  const articles = result.articles.map((a, i) => 
+    a.replace('<span class="item-number">N</span>', `<span class="item-number">${i + 1}</span>`)
+  ).join('');
+
+  return { articles, topic: result.topic };
+}
+
 function analyzeEnglishTextLocal(text) {
   // 逐句分析，给出具体修改和地道改写
   const sentences = text.split(/(?<=[.!?])\s+/);
@@ -4341,26 +4399,52 @@ function renderInspirations() {
 }
 
 // ========== AI 内容刷新（本地版，setTimeout + 演示数据） ==========
-async function refreshModule(module) {
-  const btn = event.target;
+async function refreshModule(module, e) {
+  const btn = e ? e.target : document.querySelector(`[onclick*="refreshModule('${module}', event)"]`);
+  if (!btn) return;
   btn.disabled = true;
 
   if (module === 'vpea-inspiration') {
-    btn.textContent = '正在搜集教育/留学热点...';
-    $('vpeaContent').innerHTML = '<div class="loading-placeholder">正在搜集今日 10 条教育/留学/签证移民热点...</div>';
-    $('vpeaTopicSuggestion').style.display = 'none';
-
-    setTimeout(() => {
-      const contentHtml = getVpeaDemoContent();
-      const topicHtml = getVpeaTopicSuggestion();
-      $('vpeaContent').innerHTML = contentHtml;
-      $('vpeaTopicContent').innerHTML = topicHtml;
-      $('vpeaTopicSuggestion').style.display = 'block';
-      $('vpeaLastUpdate').textContent = now();
-      saveData('vpea_content', { content: contentHtml, topic: topicHtml, date: now() });
-      btn.disabled = false;
-      btn.textContent = '今日更新';
-    }, 1000);
+    const apiKey = getDeepSeekKey();
+    if (apiKey) {
+      btn.textContent = 'AI 正在搜集热点...';
+      $('vpeaContent').innerHTML = '<div class="loading-placeholder">🤖 DeepSeek AI 正在生成今日教育/留学热点文章...</div>';
+      $('vpeaTopicSuggestion').style.display = 'none';
+      try {
+        const { articles, topic } = await generateVpeaWithAI(apiKey);
+        $('vpeaContent').innerHTML = articles;
+        $('vpeaTopicContent').innerHTML = topic;
+        $('vpeaTopicSuggestion').style.display = 'block';
+        $('vpeaLastUpdate').textContent = now();
+        saveData('vpea_content', { content: articles, topic, date: now() });
+      } catch(e) {
+        console.log('AI VPEA generation failed:', e.message);
+        $('vpeaContent').innerHTML = '<div class="loading-placeholder">AI 生成失败，使用本地内容...</div>';
+        // fallback to local
+        const contentHtml = getVpeaDemoContent();
+        const topicHtml = getVpeaTopicSuggestion();
+        $('vpeaContent').innerHTML = contentHtml;
+        $('vpeaTopicContent').innerHTML = topicHtml;
+        $('vpeaTopicSuggestion').style.display = 'block';
+        $('vpeaLastUpdate').textContent = now();
+        saveData('vpea_content', { content: contentHtml, topic: topicHtml, date: now() });
+      }
+    } else {
+      btn.textContent = '正在搜集教育/留学热点...';
+      $('vpeaContent').innerHTML = '<div class="loading-placeholder">正在搜集今日 10 条教育/留学/签证移民热点...</div>';
+      $('vpeaTopicSuggestion').style.display = 'none';
+      setTimeout(() => {
+        const contentHtml = getVpeaDemoContent();
+        const topicHtml = getVpeaTopicSuggestion();
+        $('vpeaContent').innerHTML = contentHtml;
+        $('vpeaTopicContent').innerHTML = topicHtml;
+        $('vpeaTopicSuggestion').style.display = 'block';
+        $('vpeaLastUpdate').textContent = now();
+        saveData('vpea_content', { content: contentHtml, topic: topicHtml, date: now() });
+      }, 1000);
+    }
+    btn.disabled = false;
+    btn.textContent = '今日更新';
 
   } else if (module === 'stocks') {
     btn.textContent = '正在分析市场...';
