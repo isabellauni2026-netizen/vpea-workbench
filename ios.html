@@ -5605,26 +5605,65 @@ function initApp() {
   $('ingredientInput').addEventListener('keypress', e => { if (e.key === 'Enter') addIngredient(); });
 }
 
-function loadCachedContent() {
+async function loadCachedContent() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const apiKey = getDeepSeekKey();
+
+  // VPEA 灵感：如果缓存不是今天的，自动用 AI 刷新
   const cachedVpea = loadData('vpea_content');
-  if (cachedVpea) {
+  if (cachedVpea && cachedVpea.date && cachedVpea.date.startsWith(todayStr)) {
     $('vpeaContent').innerHTML = cachedVpea.content;
     if (cachedVpea.topic) {
       $('vpeaTopicContent').innerHTML = cachedVpea.topic;
       $('vpeaTopicSuggestion').style.display = 'block';
     }
     $('vpeaLastUpdate').textContent = cachedVpea.date;
+  } else if (apiKey) {
+    // 缓存过期，自动刷新
+    $('vpeaContent').innerHTML = '<div class="loading-placeholder">🤖 正在自动更新今日热点...</div>';
+    try {
+      const { articles, topic } = await generateVpeaWithAI(apiKey);
+      $('vpeaContent').innerHTML = articles;
+      $('vpeaTopicContent').innerHTML = topic;
+      $('vpeaTopicSuggestion').style.display = 'block';
+      $('vpeaLastUpdate').textContent = now();
+      saveData('vpea_content', { content: articles, topic, date: now() });
+    } catch(e) {
+      console.log('Auto-refresh VPEA failed:', e.message);
+      if (cachedVpea) {
+        $('vpeaContent').innerHTML = cachedVpea.content;
+        $('vpeaLastUpdate').textContent = cachedVpea.date;
+      }
+    }
   }
+
   const cachedStocks = loadData('stocks_content');
   if (cachedStocks) {
     $('stocksNews').innerHTML = cachedStocks.content;
     $('stocksLastUpdate').textContent = cachedStocks.date;
   }
+
+  // 英语学习材料：如果缓存不是今天的，自动用 AI 刷新
   const cachedEng = loadData('english_work_content');
-  if (cachedEng) {
+  if (cachedEng && cachedEng.date && cachedEng.date.startsWith(todayStr)) {
     $('englishWorkContent').innerHTML = cachedEng.content;
     $('englishWorkLastUpdate').textContent = cachedEng.date;
+  } else if (apiKey) {
+    $('englishWorkContent').innerHTML = '<div class="loading-placeholder">🤖 正在自动生成今日学习材料...</div>';
+    try {
+      const content = await generateEnglishWorkWithAI(apiKey);
+      $('englishWorkContent').innerHTML = content;
+      $('englishWorkLastUpdate').textContent = now();
+      saveData('english_work_content', { content, date: now() });
+    } catch(e) {
+      console.log('Auto-refresh English failed:', e.message);
+      if (cachedEng) {
+        $('englishWorkContent').innerHTML = cachedEng.content;
+        $('englishWorkLastUpdate').textContent = cachedEng.date;
+      }
+    }
   }
+
   const cachedItalian = loadData('italian_content');
   if (cachedItalian) {
     $('italianContent').innerHTML = cachedItalian.content;
